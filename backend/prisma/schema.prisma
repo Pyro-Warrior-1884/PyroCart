@@ -38,4 +38,5 @@ model User {
   email   String   @unique
   name    String?
   reviews Review[]
+  createdAt DateTime @default(now())
 }

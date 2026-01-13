@@ -46,7 +46,7 @@ services:
     ports:
       - "${PORT}:3000"
     env_file:
-      - .env
+      - .env.docker
     depends_on:
       postgres:
         condition: service_healthy
