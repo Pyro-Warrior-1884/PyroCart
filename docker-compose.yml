@@ -59,12 +59,13 @@ services:
   seed:
     build: ./backend
     container_name: ecommerce_seed
-    command: sh -c "npm install -g ts-node typescript && ts-node ./prisma/seed.ts"
+    command: npx prisma db seed
     env_file:
       - .env.docker
     depends_on:
       postgres:
         condition: service_healthy
+
 
 volumes:
   postgres_data:
