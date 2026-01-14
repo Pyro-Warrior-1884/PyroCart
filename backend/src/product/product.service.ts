@@ -8,16 +8,21 @@ export class ProductService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateProductDto) {
-    const { category, ...rest } = dto;
+    const { category, imageUrl, ...rest } = dto;
 
     return this.prisma.product.create({
       data: {
         ...rest,
+
         category: {
           connectOrCreate: {
             where: { name: category },
             create: { name: category },
           },
+        },
+
+        images: {
+          create: [{ url: imageUrl }],
         },
       },
     });
