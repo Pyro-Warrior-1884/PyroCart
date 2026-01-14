@@ -3,32 +3,71 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
+type FakeStoreProduct = {
+  id: number;
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+  image: string;
+  rating: {
+    rate: number;
+    count: number;
+  };
+};
+
 async function seed() {
-  console.log('🌱 Seeding started...');
+  const { data: products } = await axios.get<FakeStoreProduct[]>(
+    'https://fakestoreapi.com/products',
+  );
 
-  // Fetch 1 product from Fake Store API
-  const { data } = await axios.get('https://fakestoreapi.com/products/1');
+  for (const product of products) {
+    await prisma.product.upsert({
+      where: { title: product.title },
 
-  await prisma.product.create({
-    data: {
-      title: data.title,
-      description: data.description,
-      price: data.price,
-      category: data.category,
-      imageUrl: data.image, // for now use original URL
-      ratingAvg: data.rating.rate,
-      ratingCount: data.rating.count,
-    },
-  })
+      update: {
+        price: product.price,
+        description: product.description,
+        ratingAvg: product.rating.rate,
+        ratingCount: product.rating.count,
 
-  console.log('✅ Product seeded');
+        category: {
+          connectOrCreate: {
+            where: { name: product.category },
+            create: { name: product.category },
+          },
+        },
+
+        images: {
+          deleteMany: {},
+          create: [{ url: product.image }],
+        },
+      },
+
+      create: {
+        title: product.title,
+        price: product.price,
+        description: product.description,
+        ratingAvg: product.rating.rate,
+        ratingCount: product.rating.count,
+
+        category: {
+          connectOrCreate: {
+            where: { name: product.category },
+            create: { name: product.category },
+          },
+        },
+
+        images: {
+          create: [{ url: product.image }],
+        },
+      },
+    });
+  }
 }
 
 seed()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
+  .catch(() => process.exit(1))
   .finally(async () => {
     await prisma.$disconnect();
   });

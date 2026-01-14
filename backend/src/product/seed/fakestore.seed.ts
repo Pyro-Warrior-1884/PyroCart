@@ -26,6 +26,7 @@ export class FakeStoreSeeder {
       });
 
       const filename = `products/${Date.now()}-${product.id}.jpg`;
+
       const imageUrl = await this.minio.uploadImage(
         Buffer.from(imageRes.data),
         filename,
@@ -37,10 +38,19 @@ export class FakeStoreSeeder {
           title: product.title,
           description: product.description,
           price: product.price,
-          category: product.category,
-          imageUrl,
           ratingAvg: product.rating.rate,
           ratingCount: product.rating.count,
+
+          category: {
+            connectOrCreate: {
+              where: { name: product.category },
+              create: { name: product.category },
+            },
+          },
+
+          images: {
+            create: [{ url: imageUrl }],
+          },
         },
       });
     }

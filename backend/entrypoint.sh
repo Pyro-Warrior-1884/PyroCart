@@ -5,4 +5,4 @@ set -e
 npx prisma migrate deploy
 
 # Start NestJS app
-node dist/main.js
+node dist/src/main.js
