@@ -1,30 +1,54 @@
-import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Client } from 'minio';
+import { randomUUID } from 'crypto';
 
 @Injectable()
-export class MinioService {
-  private s3 = new S3Client({
-    region: 'us-east-1',
-    endpoint: `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}`,
-    credentials: {
-      accessKeyId: process.env.MINIO_ACCESS_KEY!,
-      secretAccessKey: process.env.MINIO_SECRET_KEY!,
-    },
-    forcePathStyle: true,
-  });
+export class MinioService implements OnModuleInit {
+  private client: Client;
+  private bucket: string;
 
-  async uploadImage(buffer: Buffer, filename: string, mimeType: string) {
-    const bucket = process.env.MINIO_BUCKET!;
+  onModuleInit() {
+    this.bucket = process.env.MINIO_BUCKET as string;
 
-    await this.s3.send(
-      new PutObjectCommand({
-        Bucket: bucket,
-        Key: filename,
-        Body: buffer,
-        ContentType: mimeType,
-      }),
+    this.client = new Client({
+      endPoint: process.env.MINIO_ENDPOINT as string,
+      port: Number(process.env.MINIO_PORT),
+      useSSL: process.env.MINIO_USE_SSL === 'true',
+      accessKey: process.env.MINIO_ACCESS_KEY as string,
+      secretKey: process.env.MINIO_SECRET_KEY as string,
+    });
+  }
+
+  async ensureBucket() {
+    const exists = await this.client.bucketExists(this.bucket);
+    if (!exists) {
+      await this.client.makeBucket(this.bucket);
+    }
+  }
+
+  async uploadProductImage(
+    buffer: Buffer,
+    mimeType: string,
+    productId: number,
+  ) {
+    const objectKey = `products/${productId}/${randomUUID()}`;
+
+    await this.client.putObject(this.bucket, objectKey, buffer, buffer.length, {
+      'Content-Type': mimeType,
+    });
+
+    return objectKey;
+  }
+
+  async deleteObject(objectKey: string) {
+    await this.client.removeObject(this.bucket, objectKey);
+  }
+
+  async getSignedUrl(objectKey: string, expirySeconds = 3600) {
+    return this.client.presignedGetObject(
+      this.bucket,
+      objectKey,
+      expirySeconds,
     );
-
-    return `http://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}/${bucket}/${filename}`;
   }
 }
