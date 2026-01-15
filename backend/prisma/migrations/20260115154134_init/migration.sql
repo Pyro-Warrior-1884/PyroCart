@@ -11,12 +11,14 @@ CREATE TABLE "Category" (
 -- CreateTable
 CREATE TABLE "Product" (
     "id" SERIAL NOT NULL,
+    "externalId" INTEGER,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
     "categoryId" INTEGER NOT NULL,
-    "ratingAvg" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "ratingCount" INTEGER NOT NULL DEFAULT 0,
+    "ratingAvg" DOUBLE PRECISION,
+    "ratingCount" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -59,16 +61,22 @@ CREATE TABLE "User" (
 CREATE UNIQUE INDEX "Category_name_key" ON "Category"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Product_title_key" ON "Product"("title");
+CREATE UNIQUE INDEX "Product_externalId_key" ON "Product"("externalId");
 
 -- CreateIndex
 CREATE INDEX "Product_categoryId_idx" ON "Product"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "Product_price_idx" ON "Product"("price");
 
 -- CreateIndex
 CREATE INDEX "Review_productId_idx" ON "Review"("productId");
 
 -- CreateIndex
 CREATE INDEX "Review_userId_idx" ON "Review"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Review_productId_userId_key" ON "Review"("productId", "userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");

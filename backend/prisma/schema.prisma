@@ -18,9 +18,11 @@ model Category {
 
 model Product {
   id          Int             @id @default(autoincrement())
-  title       String          @unique
+  externalId  Int?            @unique
+  title       String
   description String
   price       Decimal         @db.Decimal(10, 2)
+  isActive    Boolean         @default(true)
 
   categoryId  Int
   category    Category        @relation(fields: [categoryId], references: [id])
@@ -28,18 +30,20 @@ model Product {
   images      ProductImage[]
   reviews     Review[]
 
-  ratingAvg   Float           @default(0)
-  ratingCount Int             @default(0)
+  ratingAvg   Float?
+  ratingCount Int?
 
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
   @@index([categoryId])
+  @@index([price])
 }
 
 model ProductImage {
   id        Int      @id @default(autoincrement())
-  url       String   
+  url       String
+
   productId Int
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -48,7 +52,7 @@ model ProductImage {
 
 model Review {
   id        Int      @id @default(autoincrement())
-  rating    Int      // 1–5
+  rating    Int
   comment   String?
 
   productId Int
@@ -61,6 +65,7 @@ model Review {
 
   @@index([productId])
   @@index([userId])
+  @@unique([productId, userId])
 }
 
 model User {

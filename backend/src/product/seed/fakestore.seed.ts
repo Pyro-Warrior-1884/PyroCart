@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MinioService } from '../../minio/minio.service';
 import { FakeStoreProduct } from './fakestore.types';
@@ -35,9 +36,10 @@ export class FakeStoreSeeder {
 
       await this.prisma.product.create({
         data: {
+          externalId: product.id,
           title: product.title,
           description: product.description,
-          price: product.price,
+          price: new Prisma.Decimal(product.price),
           ratingAvg: product.rating.rate,
           ratingCount: product.rating.count,
 
