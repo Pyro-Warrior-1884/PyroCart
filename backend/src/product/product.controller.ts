@@ -8,6 +8,7 @@ import {
   Delete,
   UploadedFile,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
@@ -33,22 +34,22 @@ export class ProductController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.findOne(id);
   }
 
   @Patch(':id')
   @UseInterceptors(FileInterceptor('image'))
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProductDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.productService.update(+id, dto, file);
+    return this.productService.update(id, dto, file);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.productService.remove(id);
   }
 }

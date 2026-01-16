@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
 import { MinioService } from './minio/minio.service';
 import { MinioModule } from './minio/minio.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MinioModule } from './minio/minio.module';
     PrismaModule,
     ProductModule,
     MinioModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService, MinioService],
