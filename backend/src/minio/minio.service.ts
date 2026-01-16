@@ -7,7 +7,7 @@ export class MinioService implements OnModuleInit {
   private client: Client;
   private bucket: string;
 
-  onModuleInit() {
+  async onModuleInit() {
     this.bucket = process.env.MINIO_BUCKET as string;
 
     this.client = new Client({
@@ -17,12 +17,15 @@ export class MinioService implements OnModuleInit {
       accessKey: process.env.MINIO_ACCESS_KEY as string,
       secretKey: process.env.MINIO_SECRET_KEY as string,
     });
+
+    await this.ensureBucket();
   }
 
-  async ensureBucket() {
+  private async ensureBucket() {
     const exists = await this.client.bucketExists(this.bucket);
     if (!exists) {
       await this.client.makeBucket(this.bucket);
+      console.log(`MinIO bucket created: ${this.bucket}`);
     }
   }
 
@@ -52,3 +55,4 @@ export class MinioService implements OnModuleInit {
     );
   }
 }
+

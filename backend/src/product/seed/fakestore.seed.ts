@@ -28,7 +28,7 @@ export class FakeStoreSeeder {
 
       const filename = `products/${Date.now()}-${product.id}.jpg`;
 
-      const imageUrl = await this.minio.uploadImage(
+      const imageUrl = await this.minio.uploadProductImage(
         Buffer.from(imageRes.data),
         filename,
         imageRes.headers['content-type'],

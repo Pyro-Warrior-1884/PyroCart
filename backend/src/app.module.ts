@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
-import { MinioService } from './minio/minio.service';
 import { MinioModule } from './minio/minio.module';
 import { ReviewModule } from './review/review.module';
 import { AuthModule } from './auth/auth.module';
+
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -21,6 +26,18 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, MinioService],
+  providers: [
+    AppService,
+
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}
