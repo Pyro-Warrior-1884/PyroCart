@@ -7,6 +7,7 @@ import { ProductModule } from './product/product.module';
 import { MinioService } from './minio/minio.service';
 import { MinioModule } from './minio/minio.module';
 import { ReviewModule } from './review/review.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ReviewModule } from './review/review.module';
     ProductModule,
     MinioModule,
     ReviewModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, MinioService],
