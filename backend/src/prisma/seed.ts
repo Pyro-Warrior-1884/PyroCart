@@ -44,6 +44,7 @@ async function seed() {
         ratingAvg: product.rating.rate,
         ratingCount: product.rating.count,
         isActive: true,
+        stock: 10,
 
         category: {
           connectOrCreate: {
@@ -66,6 +67,7 @@ async function seed() {
         ratingAvg: product.rating.rate,
         ratingCount: product.rating.count,
         isActive: true,
+        stock: 10, // ✅ DEFAULT STOCK
 
         category: {
           connectOrCreate: {
@@ -85,7 +87,6 @@ async function seed() {
       console.log(`[SEED] Updated product (externalId=${product.id})`);
     } else {
       created++;
-      console.log(`[SEED] Created product (externalId=${product.id})`);
     }
   }
 

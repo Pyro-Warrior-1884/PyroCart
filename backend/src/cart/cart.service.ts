@@ -19,6 +19,7 @@ export class CartService {
       },
     });
 
+    console.log(`Cart Displayed`);
     return cart;
   }
 
@@ -56,6 +57,7 @@ export class CartService {
       },
     });
 
+    console.log(`Item Added to Cart`);
     return item;
   }
 
@@ -86,6 +88,7 @@ export class CartService {
       data: { quantity },
     });
 
+    console.log(`Item Updated in Cart`);
     return item;
   }
 
@@ -107,6 +110,7 @@ export class CartService {
       },
     });
 
+    console.log(`Item Removed from Cart`);
     return item;
   }
 }

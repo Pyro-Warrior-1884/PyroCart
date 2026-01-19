@@ -35,6 +35,7 @@ export class AuthService {
       },
     });
 
+    console.log(`Email ${dto.email} Registered`);
     return this.signToken(user.id, user.email, user.role);
   }
 
@@ -53,12 +54,14 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    console.log(`User ${dto.email} Logged In`);
     return this.signToken(user.id, user.email, user.role);
   }
 
   private signToken(userId: number, email: string, role: string) {
     const payload = { sub: userId, email, role };
 
+    console.log(`Payload Issued`);
     return {
       accessToken: this.jwt.sign(payload),
     };

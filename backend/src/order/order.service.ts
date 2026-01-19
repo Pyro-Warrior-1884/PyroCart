@@ -60,6 +60,7 @@ export class OrderService {
         where: { cartId: cart.id },
       });
 
+      console.log(`Order Checkout Successful`);
       return order;
     });
   }

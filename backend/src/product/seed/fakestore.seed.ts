@@ -11,6 +11,7 @@ export class FakeStoreSeeder {
   ) {}
 
   async seed() {
+    console.log(`Seed Ts Called from Product`);
     const { data } = await axios.get<FakeStoreProduct[]>(
       'https://fakestoreapi.com/products',
     );

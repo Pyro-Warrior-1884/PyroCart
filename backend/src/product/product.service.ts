@@ -39,7 +39,7 @@ export class ProductService {
     file?: Express.Multer.File,
   ): Promise<ProductResponse> {
     const { category, ...rest } = dto;
-
+    console.log(`Adding A Product`);
     const product = await this.prisma.product.create({
       data: {
         ...rest,
@@ -76,6 +76,7 @@ export class ProductService {
   }
 
   async findAll(): Promise<ProductResponse[]> {
+    console.log(`Displaying All Products`);
     const products = await this.prisma.product.findMany({
       include: {
         category: true,
@@ -88,6 +89,7 @@ export class ProductService {
   }
 
   async findOne(id: number): Promise<ProductResponse | null> {
+    console.log(`Finding Product ${id}`);
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
@@ -97,8 +99,11 @@ export class ProductService {
       },
     });
 
-    if (!product) return null;
-
+    if (!product) {
+      console.log(`Product ${id} Not Exisiting`);
+      return null;
+    }
+    console.log(`Product ${id} Found`);
     return this.mapProduct(product);
   }
 
@@ -107,6 +112,7 @@ export class ProductService {
     dto: UpdateProductDto,
     file?: Express.Multer.File,
   ): Promise<ProductResponse> {
+    console.log(`Updating Product ${id}`);
     const { category, ...rest } = dto;
 
     if (isMulterFile(file)) {
@@ -149,12 +155,14 @@ export class ProductService {
         reviews: true,
       },
     });
-
+    console.log(`Product ${id} Updated`);
     return this.mapProduct(updatedProduct);
   }
 
   async remove(id: number): Promise<Product> {
     await this.deleteExistingImages(id);
+
+    console.log(`Product ${id} Deleted`);
 
     return this.prisma.product.delete({
       where: { id },

@@ -55,4 +55,3 @@ export class MinioService implements OnModuleInit {
     );
   }
 }
-
