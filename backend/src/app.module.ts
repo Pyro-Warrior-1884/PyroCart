@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
 
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { CartModule } from './cart/cart.module';
+import { OrderModule } from './order/order.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { RolesGuard } from './auth/guards/roles.guard';
     MinioModule,
     ReviewModule,
     AuthModule,
+    CartModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [
