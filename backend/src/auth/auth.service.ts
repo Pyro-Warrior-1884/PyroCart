@@ -38,7 +38,7 @@ export class AuthService {
       },
     });
 
-    if (userCount === 1) {
+    if (userCount === 0) {
       console.log(`Admin is Created`);
     }
 

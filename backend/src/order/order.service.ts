@@ -5,6 +5,14 @@ import { CartService } from '../cart/cart.service';
 import { CartWithItems } from '../cart/cart.types';
 import { OrderStatus } from '@prisma/client';
 
+const ORDER_STATUS_FLOW: Record<OrderStatus, OrderStatus[]> = {
+  PENDING: ['PAID', 'CANCELLED'],
+  PAID: ['SHIPPED'],
+  SHIPPED: ['DELIVERED'],
+  DELIVERED: [],
+  CANCELLED: [],
+};
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -141,9 +149,27 @@ export class OrderService {
   }
 
   async updateOrderStatus(orderId: number, status: OrderStatus) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    const allowedNextStates = ORDER_STATUS_FLOW[order.status];
+
+    if (!allowedNextStates.includes(status)) {
+      throw new BadRequestException(
+        `Invalid status transition from ${order.status} to ${status}`,
+      );
+    }
+
+    console.log(`Status Transition from ${order.status} to ${status}`);
+
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: { status: status },
     });
   }
 }
