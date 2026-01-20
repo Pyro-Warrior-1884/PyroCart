@@ -27,15 +27,17 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    const userCount = await this.prisma.user.count();
+
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
+        role: userCount === 0 ? 'ADMIN' : 'USER',
       },
     });
 
-    console.log(`Email ${dto.email} Registered`);
     return this.signToken(user.id, user.email, user.role);
   }
 

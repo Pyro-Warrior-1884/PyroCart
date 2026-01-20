@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Order } from '@prisma/client';
 import { CartService } from '../cart/cart.service';
 import { CartWithItems } from '../cart/cart.types';
+import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -62,6 +63,87 @@ export class OrderService {
 
       console.log(`Order Checkout Successful`);
       return order;
+    });
+  }
+
+  async getUserOrders(userId: number) {
+    return this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getUserOrderById(orderId: number, userId: number) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        id: orderId,
+        userId,
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    return order;
+  }
+
+  async getAllOrders() {
+    return this.prisma.order.findMany({
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getOrderById(orderId: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+    });
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    return order;
+  }
+
+  async updateOrderStatus(orderId: number, status: OrderStatus) {
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status },
     });
   }
 }

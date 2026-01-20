@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
+import { Controller, Post, UseGuards, Param, Get } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../auth/decorators/user.decorator';
@@ -11,5 +11,15 @@ export class OrderController {
   @Post('checkout')
   checkout(@User('id') userId: number) {
     return this.orderService.checkout(userId);
+  }
+
+  @Get()
+  getMyOrders(@User('id') userId: number) {
+    return this.orderService.getUserOrders(userId);
+  }
+
+  @Get(':id')
+  getMyOrder(@Param('id') id: string, @User('id') userId: number) {
+    return this.orderService.getUserOrderById(+id, userId);
   }
 }

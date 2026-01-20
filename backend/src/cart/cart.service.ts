@@ -8,7 +8,7 @@ export class CartService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getCart(userId: number): Promise<CartWithItems | null> {
-    const cart: CartWithItems | null = await this.prisma.cart.findUnique({
+    return this.prisma.cart.findUnique({
       where: { userId },
       include: {
         items: {
@@ -18,9 +18,6 @@ export class CartService {
         },
       },
     });
-
-    console.log(`Cart Displayed`);
-    return cart;
   }
 
   async addToCart(
@@ -38,7 +35,7 @@ export class CartService {
       create: { userId },
     });
 
-    const item: CartItem = await this.prisma.cartItem.upsert({
+    return this.prisma.cartItem.upsert({
       where: {
         cartId_productId: {
           cartId: cart.id,
@@ -56,9 +53,6 @@ export class CartService {
         quantity,
       },
     });
-
-    console.log(`Item Added to Cart`);
-    return item;
   }
 
   async updateItem(
@@ -74,11 +68,25 @@ export class CartService {
       where: { userId },
     });
 
-    if (cart === null) {
+    if (!cart) {
       throw new BadRequestException('Cart not found');
     }
 
-    const item: CartItem = await this.prisma.cartItem.update({
+    const existingItem = await this.prisma.cartItem.findUnique({
+      where: {
+        cartId_productId: {
+          cartId: cart.id,
+          productId,
+        },
+      },
+    });
+
+    if (!existingItem) {
+      console.log(`Item not found in cart`);
+      throw new BadRequestException('Item not found in cart');
+    }
+
+    return this.prisma.cartItem.update({
       where: {
         cartId_productId: {
           cartId: cart.id,
@@ -87,9 +95,6 @@ export class CartService {
       },
       data: { quantity },
     });
-
-    console.log(`Item Updated in Cart`);
-    return item;
   }
 
   async removeItem(userId: number, productId: number): Promise<CartItem> {
@@ -97,11 +102,11 @@ export class CartService {
       where: { userId },
     });
 
-    if (cart === null) {
+    if (!cart) {
       throw new BadRequestException('Cart not found');
     }
 
-    const item: CartItem = await this.prisma.cartItem.delete({
+    const existingItem = await this.prisma.cartItem.findUnique({
       where: {
         cartId_productId: {
           cartId: cart.id,
@@ -110,7 +115,18 @@ export class CartService {
       },
     });
 
-    console.log(`Item Removed from Cart`);
-    return item;
+    if (!existingItem) {
+      console.log(`Item not found in cart`);
+      throw new BadRequestException('Item not found in cart');
+    }
+
+    return this.prisma.cartItem.delete({
+      where: {
+        cartId_productId: {
+          cartId: cart.id,
+          productId,
+        },
+      },
+    });
   }
 }

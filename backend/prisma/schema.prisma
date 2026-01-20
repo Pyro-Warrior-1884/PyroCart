@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -87,6 +88,7 @@ model Order {
   items     OrderItem[]
 
   createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }
@@ -129,6 +131,7 @@ model User {
   name      String?
 
   reviews   Review[]
+  orders    Order[]
   cart      Cart?
 
   createdAt DateTime @default(now())
