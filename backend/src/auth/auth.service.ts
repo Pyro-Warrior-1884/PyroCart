@@ -38,6 +38,10 @@ export class AuthService {
       },
     });
 
+    if (userCount === 1) {
+      console.log(`Admin is Created`);
+    }
+
     return this.signToken(user.id, user.email, user.role);
   }
 
