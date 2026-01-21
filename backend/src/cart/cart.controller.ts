@@ -12,6 +12,7 @@ import { User } from '../auth/decorators/user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CartService } from './cart.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard)
 @Controller('cart')
@@ -23,11 +24,13 @@ export class CartController {
     return this.cartService.getCart(userId);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60 } })
   @Post('items')
   add(@User('id') userId: number, @Body() dto: AddToCartDto) {
     return this.cartService.addToCart(userId, dto.productId, dto.quantity);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60 } })
   @Patch('items/:productId')
   update(
     @User('id') userId: number,
@@ -37,6 +40,7 @@ export class CartController {
     return this.cartService.updateItem(userId, +productId, quantity);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60 } })
   @Delete('items/:productId')
   remove(@User('id') userId: number, @Param('productId') productId: string) {
     return this.cartService.removeItem(userId, +productId);

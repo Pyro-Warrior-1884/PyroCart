@@ -15,11 +15,22 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { CartModule } from './cart/cart.module';
 import { OrderModule } from './order/order.module';
+import { UserModule } from './user/user.module';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'default',
+          ttl: 60,
+          limit: 50,
+        },
+      ],
     }),
     PrismaModule,
     ProductModule,
@@ -28,10 +39,15 @@ import { OrderModule } from './order/order.module';
     AuthModule,
     CartModule,
     OrderModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
 
     {
       provide: APP_GUARD,

@@ -19,6 +19,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -34,11 +35,13 @@ export class ProductController {
     return this.productService.create(dto, file);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60 } })
   @Get()
   findAll() {
     return this.productService.findAll();
   }
 
+  @Throttle({ default: { limit: 60, ttl: 60 } })
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productService.findOne(id);
