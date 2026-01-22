@@ -5,7 +5,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { RedisService } from '../redis/redis.service';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
@@ -14,6 +16,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
+    private readonly redis: RedisService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -26,7 +29,6 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-
     const userCount = await this.prisma.user.count();
 
     const user = await this.prisma.user.create({
@@ -39,10 +41,10 @@ export class AuthService {
     });
 
     if (userCount === 0) {
-      console.log(`Admin is Created`);
+      console.log('Admin is Created');
     }
 
-    return this.signToken(user.id, user.email, user.role);
+    return this.issueTokens(user.id, user.email, user.role);
   }
 
   async login(dto: LoginDto) {
@@ -60,16 +62,60 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    console.log(`User ${dto.email} Logged In`);
-    return this.signToken(user.id, user.email, user.role);
+    console.log(`User ${dto.email} logged in`);
+
+    return this.issueTokens(user.id, user.email, user.role);
   }
 
-  private signToken(userId: number, email: string, role: string) {
-    const payload = { sub: userId, email, role };
+  async refresh(userId: number, refreshToken: string) {
+    const stored = await this.redis.get(`refresh:user:${userId}`);
 
-    console.log(`Payload Issued`);
+    if (!stored || stored !== refreshToken) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    await this.redis.del(`refresh:user:${userId}`);
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.issueTokens(user.id, user.email, user.role);
+  }
+
+  async logout(userId: number) {
+    await this.redis.del(`refresh:user:${userId}`);
+    return { message: 'Logged out successfully' };
+  }
+
+  private async issueTokens(userId: number, email: string, role: string) {
+    const accessToken = this.jwt.sign(
+      {
+        sub: userId,
+        email,
+        role,
+      },
+      {
+        secret: process.env.JWT_SECRET,
+        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+      },
+    );
+
+    const refreshToken = randomUUID();
+
+    await this.redis.set(
+      `refresh:user:${userId}`,
+      refreshToken,
+      Number(process.env.JWT_REFRESH_EXPIRES_SECONDS),
+    );
+
     return {
-      accessToken: this.jwt.sign(payload),
+      accessToken,
+      refreshToken,
     };
   }
 }
