@@ -9,6 +9,23 @@ export class RedisService implements OnModuleDestroy {
     private readonly redis: Redis,
   ) {}
 
+  async acquireLock(key: string, ttlSeconds: number): Promise<boolean> {
+    const result = await this.redis.call(
+      'SET',
+      key,
+      'locked',
+      'NX',
+      'EX',
+      ttlSeconds.toString(),
+    );
+
+    return result === 'OK';
+  }
+
+  async releaseLock(key: string): Promise<void> {
+    await this.redis.del(key);
+  }
+
   async get(key: string): Promise<string | null> {
     return this.redis.get(key);
   }
@@ -50,9 +67,5 @@ export class RedisService implements OnModuleDestroy {
     ttlSeconds: number,
   ): Promise<void> {
     await this.redis.set(key, JSON.stringify(value), 'EX', ttlSeconds);
-  }
-
-  async delJson(key: string): Promise<void> {
-    await this.redis.del(key);
   }
 }

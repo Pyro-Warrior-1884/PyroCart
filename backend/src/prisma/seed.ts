@@ -67,7 +67,7 @@ async function seed() {
         ratingAvg: product.rating.rate,
         ratingCount: product.rating.count,
         isActive: true,
-        stock: 10, // ✅ DEFAULT STOCK
+        stock: 10,
 
         category: {
           connectOrCreate: {
