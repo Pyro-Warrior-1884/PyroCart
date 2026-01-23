@@ -42,6 +42,8 @@ export class AuthService {
 
     if (userCount === 0) {
       console.log('Admin is Created');
+    } else {
+      console.log(`${dto.email} Registered`);
     }
 
     return this.issueTokens(user.id, user.email, user.role);
@@ -62,7 +64,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    console.log(`User ${dto.email} logged in`);
+    console.log(`User ${dto.email} Logged In`);
 
     return this.issueTokens(user.id, user.email, user.role);
   }
@@ -84,11 +86,14 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
+    console.log(`${user.email} Token Refreshed`);
+
     return this.issueTokens(user.id, user.email, user.role);
   }
 
   async logout(userId: number) {
     await this.redis.del(`refresh:user:${userId}`);
+    console.log(`${userId} Token Deleted & Logged Out`);
     return { message: 'Logged out successfully' };
   }
 
@@ -101,7 +106,7 @@ export class AuthService {
       },
       {
         secret: process.env.JWT_SECRET,
-        expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
+        expiresIn: Number(process.env.JWT_ACCESS_EXPIRES_IN),
       },
     );
 
