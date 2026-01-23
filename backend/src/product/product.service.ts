@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MinioService } from '../minio/minio.service';
+import { RedisService } from '../redis/redis.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductImage, Category, Review } from '@prisma/client';
@@ -32,6 +33,7 @@ export class ProductService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly minioService: MinioService,
+    private readonly redis: RedisService,
   ) {}
 
   async create(
@@ -39,7 +41,7 @@ export class ProductService {
     file?: Express.Multer.File,
   ): Promise<ProductResponse> {
     const { category, ...rest } = dto;
-    console.log(`Adding A Product`);
+
     const product = await this.prisma.product.create({
       data: {
         ...rest,
@@ -72,11 +74,19 @@ export class ProductService {
       });
     }
 
+    await this.redis.del('products:all');
+
     return this.mapProduct(product);
   }
 
   async findAll(): Promise<ProductResponse[]> {
-    console.log(`Displaying All Products`);
+    const cacheKey = 'products:all';
+
+    const cached = await this.redis.getJson<ProductResponse[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const products = await this.prisma.product.findMany({
       include: {
         category: true,
@@ -85,11 +95,21 @@ export class ProductService {
       },
     });
 
-    return Promise.all(products.map((p) => this.mapProduct(p)));
+    const mapped = await Promise.all(products.map((p) => this.mapProduct(p)));
+
+    await this.redis.setJson(cacheKey, mapped, 60);
+
+    return mapped;
   }
 
   async findOne(id: number): Promise<ProductResponse | null> {
-    console.log(`Finding Product ${id}`);
+    const cacheKey = `products:${id}`;
+
+    const cached = await this.redis.getJson<ProductResponse>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
@@ -100,11 +120,14 @@ export class ProductService {
     });
 
     if (!product) {
-      console.log(`Product ${id} Not Exisiting`);
       return null;
     }
-    console.log(`Product ${id} Found`);
-    return this.mapProduct(product);
+
+    const mapped = await this.mapProduct(product);
+
+    await this.redis.setJson(cacheKey, mapped, 60);
+
+    return mapped;
   }
 
   async update(
@@ -112,7 +135,6 @@ export class ProductService {
     dto: UpdateProductDto,
     file?: Express.Multer.File,
   ): Promise<ProductResponse> {
-    console.log(`Updating Product ${id}`);
     const { category, ...rest } = dto;
 
     if (isMulterFile(file)) {
@@ -147,7 +169,10 @@ export class ProductService {
       },
     });
 
-    const updatedProduct = await this.prisma.product.findUniqueOrThrow({
+    await this.redis.del('products:all');
+    await this.redis.del(`products:${id}`);
+
+    const updated = await this.prisma.product.findUniqueOrThrow({
       where: { id },
       include: {
         category: true,
@@ -155,14 +180,15 @@ export class ProductService {
         reviews: true,
       },
     });
-    console.log(`Product ${id} Updated`);
-    return this.mapProduct(updatedProduct);
+
+    return this.mapProduct(updated);
   }
 
   async remove(id: number): Promise<Product> {
     await this.deleteExistingImages(id);
 
-    console.log(`Product ${id} Deleted`);
+    await this.redis.del('products:all');
+    await this.redis.del(`products:${id}`);
 
     return this.prisma.product.delete({
       where: { id },
