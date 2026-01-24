@@ -3,6 +3,8 @@ import { OrderService } from './order.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from '../auth/decorators/user.decorator';
 import { Throttle } from '@nestjs/throttler';
+import { Role } from '../auth/roles.enum';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -25,5 +27,11 @@ export class OrderController {
   @Get(':id')
   getMyOrder(@Param('id') id: string, @User('id') userId: number) {
     return this.orderService.getUserOrderById(+id, userId);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('analytics')
+  getCheckoutAnalytics() {
+    return this.orderService.getCheckoutAnalytics();
   }
 }

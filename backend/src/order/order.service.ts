@@ -35,11 +35,13 @@ export class OrderService {
     }
 
     try {
+      await this.redis.incr('analytics:checkout:attempt');
       return await this.prisma.$transaction(async (tx) => {
         const cart: CartWithItems | null =
           await this.cartService.getCart(userId);
 
         if (!cart || cart.items.length === 0) {
+          await this.redis.incr('analytics:checkout:failed');
           throw new BadRequestException('Cart is empty');
         }
 
@@ -47,6 +49,7 @@ export class OrderService {
 
         for (const item of cart.items) {
           if (item.product.stock < item.quantity) {
+            await this.redis.incr('analytics:checkout:failed');
             throw new BadRequestException(
               `Insufficient stock for ${item.product.title}`,
             );
@@ -84,6 +87,7 @@ export class OrderService {
           where: { cartId: cart.id },
         });
 
+        await this.redis.incr('analytics:checkout:success');
         return order;
       });
     } finally {
@@ -189,5 +193,14 @@ export class OrderService {
       where: { id: orderId },
       data: { status },
     });
+  }
+
+  async getCheckoutAnalytics() {
+    return {
+      attempts: await this.redis.getNumber('analytics:checkout:attempt'),
+      success: await this.redis.getNumber('analytics:checkout:success'),
+      failed: await this.redis.getNumber('analytics:checkout:failed'),
+      cancelled: await this.redis.getNumber('analytics:checkout:cancelled'),
+    };
   }
 }
