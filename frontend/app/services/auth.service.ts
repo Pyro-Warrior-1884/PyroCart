@@ -5,7 +5,6 @@ export async function registerUser(data: {
   email: string;
   password: string;
 }) {
-  console.log(`Inside reguser`);
   const res = await fetcher("/auth/register", {
     method: "POST",
     body: JSON.stringify(data),

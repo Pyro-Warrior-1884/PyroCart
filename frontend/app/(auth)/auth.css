@@ -1,11 +1,9 @@
-/* Import Professional Font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 * {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Auth Layout */
 .auth-container {
   min-height: 90vh;
   height: 94.5vh;
@@ -18,7 +16,6 @@
   overflow: hidden;
 }
 
-/* Static Background Pattern */
 .auth-container::before {
   content: '';
   position: absolute;
@@ -33,7 +30,6 @@
   pointer-events: none;
 }
 
-/* Auth Card with Fade In Animation */
 .auth-card {
   width: 100%;
   max-width: 26rem;
@@ -50,8 +46,6 @@
   position: relative;
   z-index: 1;
   transition: all 0.3s ease;
-  
-  /* Fade In Animation */
   animation: fadeInUp 0.6s ease-out;
 }
 
@@ -73,7 +67,6 @@
   transform: translateY(-2px);
 }
 
-/* Logo/Title */
 .auth-title {
   text-align: center;
   margin-bottom: 2rem;
@@ -97,11 +90,41 @@
   50% { background-position: 100% 50%; }
 }
 
-/* Form */
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
+}
+
+.error-message {
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.error-message svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .form-group {
@@ -118,7 +141,6 @@
   transition: color 0.2s;
 }
 
-/* Password Input Wrapper */
 .password-input-wrapper {
   position: relative;
   display: flex;
@@ -163,7 +185,6 @@
   font-weight: 400;
 }
 
-/* Password Toggle Button */
 .password-toggle {
   position: absolute;
   right: 0.75rem;
@@ -195,7 +216,6 @@
   height: 20px;
 }
 
-/* Submit Button */
 .submit-button {
   width: 100%;
   padding: 0.8rem 1.5rem;
@@ -242,7 +262,6 @@
     0 5px 15px -5px rgba(249, 115, 22, 0.3);
 }
 
-/* Link Section */
 .auth-link-section {
   margin-top: 1.25rem;
   text-align: center;
@@ -284,7 +303,6 @@
   width: 100%;
 }
 
-/* Responsive */
 @media (max-width: 640px) {
   .auth-title h1 {
     font-size: 2rem;

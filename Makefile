@@ -15,3 +15,6 @@ seed:
 
 setup:
 	cd backend && npm install
+
+front:
+	cd frontend && npm run dev
