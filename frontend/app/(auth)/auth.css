@@ -1,0 +1,341 @@
+/* Import Professional Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Auth Layout */
+.auth-container {
+  min-height: 90vh;
+  height: 94.5vh;
+  background: linear-gradient(135deg, #ff2626 0%, #ff8c00 50%, #f9e828 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Static Background Pattern */
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(239, 68, 68, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(249, 115, 22, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(234, 179, 8, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Auth Card with Fade In Animation */
+.auth-card {
+  width: 100%;
+  max-width: 26rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(249, 115, 22, 0.1);
+  padding: 2rem 2.5rem;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+  
+  /* Fade In Animation */
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card:hover {
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(249, 115, 22, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Logo/Title */
+.auth-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-title h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 50%, #eab308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: -0.02em;
+  animation: shimmer 3s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Form */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.45rem;
+  transition: color 0.2s;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 3rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.625rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+  background: white;
+}
+
+.form-group input:hover {
+  border-color: #fcd34d;
+}
+
+.form-group input:focus {
+  border-color: #f97316;
+  box-shadow: 
+    0 0 0 3px rgba(249, 115, 22, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.form-group input:focus + label {
+  color: #f97316;
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* Password Toggle Button */
+.password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+}
+
+.password-toggle:hover {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.05);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Submit Button */
+.submit-button {
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 50%, #eab308 100%);
+  background-size: 200% 200%;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.submit-button:hover {
+  box-shadow: 
+    0 10px 25px -5px rgba(249, 115, 22, 0.4),
+    0 5px 10px -5px rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px);
+  background-position: 100% 50%;
+}
+
+.submit-button:hover::before {
+  left: 100%;
+}
+
+.submit-button:active {
+  transform: translateY(0);
+  box-shadow: 
+    0 5px 15px -5px rgba(249, 115, 22, 0.3);
+}
+
+/* Link Section */
+.auth-link-section {
+  margin-top: 1.25rem;
+  text-align: center;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.auth-link-section p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 500;
+}
+
+.auth-link-section a {
+  color: #f97316;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.auth-link-section a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, #ef4444, #f97316);
+  transition: width 0.3s ease;
+}
+
+.auth-link-section a:hover {
+  color: #ea580c;
+}
+
+.auth-link-section a:hover::after {
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .auth-title h1 {
+    font-size: 2rem;
+  }
+  
+  .auth-card {
+    padding: 1.75rem 1.5rem;
+    max-width: 100%;
+  }
+  
+  .form-group input {
+    padding: 0.7rem 0.875rem;
+  }
+  
+  .submit-button {
+    padding: 0.75rem 1.25rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .auth-title {
+    margin-bottom: 1.5rem;
+  }
+  
+  .auth-title h1 {
+    font-size: 2rem;
+  }
+  
+  .auth-card {
+    padding: 1.5rem 2rem;
+  }
+  
+  .auth-form {
+    gap: 1rem;
+  }
+  
+  .form-group label {
+    margin-bottom: 0.35rem;
+  }
+  
+  .form-group input {
+    padding: 0.65rem 0.875rem;
+  }
+  
+  .submit-button {
+    padding: 0.7rem 1.25rem;
+    margin-top: 0.25rem;
+  }
+  
+  .auth-link-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+}
