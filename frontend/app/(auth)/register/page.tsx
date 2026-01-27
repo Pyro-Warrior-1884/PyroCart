@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import '../auth.css';
+import { registerUser } from "@/app/services/auth.service";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -12,14 +13,30 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement register logic
-    console.log('Register:', { name, email, password });
-    
-    // Redirect to login page after signup
-    router.push('/login');
+
+    setLoading(true);
+    setError('');
+
+    try {
+      console.log(`Going to reguser`);
+      await registerUser({ name, email, password });
+      console.log(`${name} Signed In`);
+      router.push('/login');
+
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Registration failed');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -28,13 +45,12 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-card">
-      {/* Logo/Title */}
       <div className="auth-title">
         <h1>PyroCart</h1>
       </div>
 
-      {/* Register Form */}
       <form onSubmit={handleSubmit} className="auth-form">
+        {error && <p className="error-text">{error}</p>}
         <div className="form-group">
           <label htmlFor="name">Name</label>
           <input
@@ -91,12 +107,11 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <button type="submit" className="submit-button">
-          Sign Up
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? 'Signing Up...' : 'Sign Up'}
         </button>
       </form>
 
-      {/* Login Link */}
       <div className="auth-link-section">
         <p>
           Already have an account?{' '}

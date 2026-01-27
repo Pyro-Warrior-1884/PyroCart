@@ -3,16 +3,39 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import '../auth.css';
+import { useRouter } from "next/navigation";
+import { loginUser } from "@/app/services/auth.service";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement login logic
-    console.log('Login:', { email, password });
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await loginUser({ email, password });
+      console.log(`${email} Logged In Successfully`);
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("refreshToken", data.refreshToken);
+
+      router.push("/");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Login failed");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -21,13 +44,12 @@ export default function LoginPage() {
 
   return (
     <div className="auth-card">
-      {/* Logo/Title */}
       <div className="auth-title">
         <h1>PyroCart</h1>
       </div>
 
-      {/* Login Form */}
       <form onSubmit={handleSubmit} className="auth-form">
+        {error && <p className="error-text">{error}</p>}
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <input
@@ -72,12 +94,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <button type="submit" className="submit-button">
-          Log In
+        <button type="submit" className="submit-button" disabled={loading}>
+          {loading ? "Logging in..." : "Log In"}
         </button>
+
       </form>
 
-      {/* Sign Up Link */}
       <div className="auth-link-section">
         <p>
           Don&apos;t have an account?{' '}

@@ -1,23 +1,44 @@
 export async function fetcher(
-  url: string,
-  options: RequestInit = {},
-) {
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("accessToken")
+      : null;
+
+  console.log(process.env.NEXT_PUBLIC_API_URL)
+
+  const backend = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}${url}`,
+    `${backend}${endpoint}`,
     {
       ...options,
-      credentials: 'include',
       headers: {
-        'Content-Type': 'application/json',
-        ...(options.headers || {}),
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
       },
-    },
+    }
   );
 
-  if (!res.ok) {
-    const error = await res.json();
-    throw error;
-  }
+  return res;
+}
+
+async function refreshToken() {
+  const refresh = localStorage.getItem("refreshToken");
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: refresh }),
+    }
+  );
+
+  if (!res.ok) return null;
 
   return res.json();
 }
+
