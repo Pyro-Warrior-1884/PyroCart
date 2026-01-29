@@ -2,19 +2,35 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { useEffect, useState } from "react";
+import { getMyProfile } from "@/app/services/user.service";
+import Link from "next/link";
 
 interface TopbarProps {
   onProfileClick: () => void;
-  userName?: string;
 }
 
-export default function Topbar({ onProfileClick, userName = 'User' }: TopbarProps) {
+export default function Topbar({ onProfileClick }: TopbarProps) {
+  const [userName, setUserName] = useState("User");
   const firstLetter = userName.charAt(0).toUpperCase();
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const data = await getMyProfile();
+        setUserName(data.name);
+      } catch (error) {
+        console.log("Failed to load user");
+      }
+    }
+
+    loadUser();
+  }, []);
 
   return (
     <div className="shop-topbar">
       <div className="topbar-left">
-        <div className="logo-container">
+        <Link href="/shop" className="logo-container">
           <Image
             src="/PyroCart.png"
             alt="PyroCart Logo"
@@ -23,7 +39,7 @@ export default function Topbar({ onProfileClick, userName = 'User' }: TopbarProp
             className="logo-image"
           />
           <span className="logo-text">PyroCart</span>
-        </div>
+        </Link>
       </div>
 
       {/* Center - Search */}

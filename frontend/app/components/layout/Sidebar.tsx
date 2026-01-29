@@ -2,37 +2,61 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getMyProfile } from "@/app/services/user.service";
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  userName?: string;
-  userEmail?: string;
 }
 
 export default function Sidebar({ 
   isOpen, 
-  onClose, 
-  userName = 'John Doe',
-  userEmail = 'john.doe@example.com'
+  onClose 
 }: SidebarProps) {
   
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    console.log('Logout clicked');
+  const [userName, setUserName] = useState("User");
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const data = await getMyProfile();
+        setUserName(data.name);
+        setUserEmail(data.email);
+      } catch (error) {
+        console.log("Failed to Load User");
+      }
+    }
+
+    loadUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+      });
+    } catch (err) {
+      console.log("Logout Error:", err);
+    } finally {
+      localStorage.clear();
+      onClose();           
+      router.push("/login");
+    }
   };
+
+  const router = useRouter();
 
   return (
     <>
-      {/* Overlay */}
       <div 
         className={`sidebar-overlay ${isOpen ? 'active' : ''}`}
         onClick={onClose}
       />
 
-      {/* Sidebar */}
       <div className={`sidebar ${isOpen ? 'active' : ''}`}>
-        {/* Header */}
         <div className="sidebar-header">
           <h2 className="sidebar-title">Profile</h2>
           <button 
@@ -44,9 +68,7 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Content */}
         <div className="sidebar-content">
-          {/* User Info */}
           <div className="user-info">
             <div className="user-info-item">
               <span className="user-info-label">Name:</span>
@@ -58,7 +80,6 @@ export default function Sidebar({
             </div>
           </div>
 
-          {/* Menu */}
           <div className="sidebar-menu">
             <Link href="/shop/cart" className="sidebar-menu-item">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

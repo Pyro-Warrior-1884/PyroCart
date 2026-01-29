@@ -13,8 +13,7 @@ back:
 seed:
 	docker compose --env-file .env.docker up seed
 
-setup:
-	cd backend && npm install
-
 front:
 	cd frontend && npm run dev
+
+setup: down up prm back seed front

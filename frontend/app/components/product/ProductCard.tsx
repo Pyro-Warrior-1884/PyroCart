@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from "next/navigation";
 
 interface ProductCardProps {
   id: string;
@@ -11,9 +12,10 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ id, name, price, image, rating = 4.5 }: ProductCardProps) {
+  const router = useRouter();
   const handleClick = () => {
-    // TODO: Navigate to product details
     console.log('Product clicked:', id);
+    router.push(`../shop/product/${id}`);
   };
 
   return (

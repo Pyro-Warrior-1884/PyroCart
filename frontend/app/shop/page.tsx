@@ -1,42 +1,61 @@
 'use client';
 
-import React from 'react';
 import ProductCard from '../components/product/ProductCard';
 import './shop.css';
-
-// Mock data for demonstration
-const categories = [
-  {
-    id: 'men',
-    name: 'Men',
-    products: [
-      { id: '1', name: 'Product 1', price: 49.99, rating: 4 },
-      { id: '2', name: 'Product 2', price: 79.99, rating: 5 },
-      { id: '3', name: 'Product 1', price: 59.99, rating: 4 },
-      { id: '4', name: 'Product 1', price: 89.99, rating: 5 },
-      { id: '5', name: 'Product 1', price: 69.99, rating: 4 },
-      { id: '6', name: 'Product 3', price: 99.99, rating: 5 },
-    ]
-  },
-  {
-    id: 'women',
-    name: 'Women',
-    products: [
-      { id: '7', name: 'Product 1', price: 54.99, rating: 5 },
-      { id: '8', name: 'Product 2', price: 74.99, rating: 4 },
-      { id: '9', name: 'Product 1', price: 64.99, rating: 5 },
-      { id: '10', name: 'Product 1', price: 84.99, rating: 4 },
-      { id: '11', name: 'Product 1', price: 94.99, rating: 5 },
-      { id: '12', name: 'Product 3', price: 104.99, rating: 5 },
-    ]
-  }
-];
+import { useEffect, useState } from "react";
+import { getAllProducts } from "@/app/services/product.service";
+import { useRouter } from "next/navigation";
 
 export default function ShopPage() {
+
+  const [categories, setCategories] = useState<any[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const products = await getAllProducts();
+        const grouped: Record<string, any[]> = {};
+
+        products.forEach((p: any) => {
+          const categoryName = p.category.name;
+
+          if (!grouped[categoryName]) {
+            grouped[categoryName] = [];
+          }
+
+          grouped[categoryName].push({
+            id: String(p.id),
+            name: p.title,
+            price: Number(p.price),
+            rating: p.ratingAvg ?? 0,
+            image: decodeURIComponent(
+              p.images?.[0]?.url?.split("/product-images/")[1] || ""
+            )
+          });
+        });
+
+        const formatted = Object.keys(grouped).map((key) => ({
+          id: key.toLowerCase(),
+          name: key,
+          products: grouped[key],
+        }));
+
+        setCategories(formatted);
+      } catch (err) {
+        console.log("Failed to load products");
+      }
+    }
+
+    loadProducts();
+  }, []);
+
+
   const handleViewAll = (categoryId: string) => {
     console.log('View all clicked for:', categoryId);
-    // TODO: Navigate to category page
+    router.push(`/shop/category/${categoryId}`);
   };
+
 
   return (
     <>
