@@ -68,7 +68,7 @@
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 0.5rem 0.75rem 1rem;
+  padding: 0.75rem 1rem 0.75rem 1rem;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   font-size: 0.95rem;
@@ -129,20 +129,41 @@
 
 /* Breadcrumb Navigation */
 .breadcrumb {
-  background: #f9fafb;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 50%, #eab308 100%);
   padding: 0.75rem 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .breadcrumb-text {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breadcrumb-item {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.breadcrumb-item:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0.25rem;
 }
 
 .breadcrumb-current {
-  color: #f97316;
-  font-weight: 600;
+  color: white;
+  font-weight: 700;
 }
 
 /* Main Content */
@@ -472,6 +493,10 @@
 
   .logo-text {
     display: none;
+  }
+
+  .breadcrumb {
+    padding: 0.75rem 1rem;
   }
 
   .shop-main {

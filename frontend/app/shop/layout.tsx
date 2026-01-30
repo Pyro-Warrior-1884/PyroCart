@@ -22,12 +22,10 @@ export default function ShopLayout({
 
   return (
     <div>
-      <Topbar onProfileClick={handleProfileClick} userName="John Doe" />
+      <Topbar onProfileClick={handleProfileClick} />
       <Sidebar 
         isOpen={sidebarOpen} 
-        onClose={handleCloseSidebar}
-        userName="John Doe"
-        userEmail="john.doe@example.com"
+        onClose={handleCloseSidebar}        
       />
       {children}
     </div>

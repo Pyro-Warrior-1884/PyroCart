@@ -17,7 +17,7 @@ export default function Sidebar({
 }: SidebarProps) {
   
   const [userName, setUserName] = useState("User");
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("john.doe@example.com");
 
   useEffect(() => {
     async function loadUser() {

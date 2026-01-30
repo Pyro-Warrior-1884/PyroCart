@@ -5,6 +5,7 @@ import './shop.css';
 import { useEffect, useState } from "react";
 import { getAllProducts } from "@/app/services/product.service";
 import { useRouter } from "next/navigation";
+import Breadcrumb from '../components/layout/BreadCrumb';
 
 export default function ShopPage() {
 
@@ -59,12 +60,7 @@ export default function ShopPage() {
 
   return (
     <>
-      {/* Breadcrumb */}
-      <div className="breadcrumb">
-        <span className="breadcrumb-text">
-          <span className="breadcrumb-current">Main</span> &gt;
-        </span>
-      </div>
+      <Breadcrumb items={[{ label: 'Main', href: '/shop' }]} />
 
       {/* Main Content */}
       <main className="shop-main">
