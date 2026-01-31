@@ -54,7 +54,8 @@ export default function ShopPage() {
 
   const handleViewAll = (categoryId: string) => {
     console.log('View all clicked for:', categoryId);
-    router.push(`/shop/category/${categoryId}`);
+    const slug = categoryId.toLowerCase().replace(/\s+/g, '-');
+    router.push(`/shop/category/${slug}`);
   };
 
 
@@ -62,12 +63,9 @@ export default function ShopPage() {
     <>
       <Breadcrumb items={[{ label: 'Main', href: '/shop' }]} />
 
-      {/* Main Content */}
       <main className="shop-main">
-        {/* Category Sections */}
         {categories.map((category) => (
           <section key={category.id} className="category-section">
-            {/* Category Header */}
             <div className="category-header">
               <h2 className="category-title">{category.name}</h2>
               <button 
@@ -78,7 +76,6 @@ export default function ShopPage() {
               </button>
             </div>
 
-            {/* Product Slider */}
             <div className="product-slider">
               <div className="product-slider-container">
                 {category.products.map((product) => (

@@ -7,13 +7,21 @@
 .auth-container {
   min-height: 90vh;
   height: 94.5vh;
-  background: linear-gradient(135deg, #ff2626 0%, #ff8c00 50%, #f9e828 100%);
+  background: linear-gradient(135deg, #ff1919 0%, #fe7c1e 40%, #ffde3c 100%);
+  background-size: 200% 200%;
+  animation: gradientMove 6s ease infinite;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
   position: relative;
   overflow: hidden;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .auth-container::before {
