@@ -90,6 +90,7 @@ export default function CategoryPage() {
                 name={product.name}
                 price={product.price}
                 rating={product.rating}
+                path='../product'
               />
             ))}
           </div>

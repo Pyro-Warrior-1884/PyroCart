@@ -9,13 +9,14 @@ interface ProductCardProps {
   price: number;
   image?: string;
   rating?: number;
+  path?: string;
 }
 
-export default function ProductCard({ id, name, price, image, rating = 4.5 }: ProductCardProps) {
+export default function ProductCard({ id, name, price, image, rating = 4.5, path }: ProductCardProps) {
   const router = useRouter();
   const handleClick = () => {
     console.log('Product clicked:', id);
-    router.push(`../shop/product/${id}`);
+    router.push(`${path}/${id}`);
   };
 
   return (

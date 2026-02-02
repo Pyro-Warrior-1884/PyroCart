@@ -85,6 +85,7 @@ export default function ShopPage() {
                     name={product.name}
                     price={product.price}
                     rating={product.rating}
+                    path='../shop/product'
                   />
                 ))}
               </div>
