@@ -53,6 +53,7 @@ export default function ProductDetailPage() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -70,12 +71,22 @@ export default function ProductDetailPage() {
     loadProduct();
   }, [params.id]);
 
+  useEffect(() => {
+    if (showSuccessMessage) {
+      const timer = setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessMessage]);
+
   const handleAddToCart = async () => {
     if (!product) return;
     
     setAddingToCart(true);
     try {
       await addToCart(product.id, quantity);
+      setShowSuccessMessage(true);
       console.log('Product added to cart successfully!');
     } catch (error) {
       console.error('Failed to add to cart:', error);
@@ -184,6 +195,16 @@ export default function ProductDetailPage() {
         { label: 'Product', href: `/shop/product/${product.id}`}
       ]} />
       
+      {showSuccessMessage && (
+        <div className="success-message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span>Product added to cart successfully!</span>
+        </div>
+      )}
+
       <main className="product-detail-page">
         <div className="product-detail-container">
           <div className="product-images-section">

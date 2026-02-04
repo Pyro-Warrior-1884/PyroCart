@@ -2129,3 +2129,183 @@
     font-size: 1rem;
   }
 }
+
+.checkout-success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.success-icon {
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  border-radius: 50%;
+  margin-bottom: 2rem;
+  animation: scaleIn 0.5s ease-out;
+}
+
+.success-icon svg {
+  color: #065f46;
+}
+
+.success-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 1.5rem 0;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 50%, #eab308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.success-message {
+  font-size: 1.25rem;
+  color: #374151;
+  margin: 0 0 1rem 0;
+  max-width: 600px;
+  font-weight: 500;
+}
+
+.success-submessage {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 3rem 0;
+  max-width: 500px;
+}
+
+.return-shopping-btn {
+  padding: 1rem 3rem;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 50%, #eab308 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.return-shopping-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .success-title {
+    font-size: 2rem;
+  }
+
+  .success-message {
+    font-size: 1.125rem;
+  }
+
+  .return-shopping-btn {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+  }
+}
+
+/* Success Message Styles */
+.success-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #10b981;
+  color: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  z-index: 9999;
+  animation: slideInFade 0.3s ease-out, slideOutFade 0.5s ease-in 2.5s forwards;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.success-message svg {
+  flex-shrink: 0;
+  stroke: white;
+}
+
+@keyframes slideInFade {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutFade {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .success-message {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+  
+  @keyframes slideInFade {
+    from {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideOutFade {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+  }
+}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Breadcrumb from '@/app/components/layout/BreadCrumb';
 import CartItem from '@/app/components/cart/CartItem';
 import { getCart, updateCartItem, removeFromCart } from '@/app/services/cart.service';
+import { checkoutOrder } from '@/app/services/order.service';
 import '../shop.css';
 
 interface CartItemData {
@@ -80,9 +81,19 @@ export default function CartPage() {
     }
   };
 
-  const handlePlaceOrder = () => {
-    console.log('Place order clicked');
-    router.push('/shop/checkout');
+  const handlePlaceOrder = async () => {
+    if (cartItems.length === 0) return;
+
+    try {
+      setUpdating(true);
+      await checkoutOrder();
+      router.push('/shop/checkout');
+    } catch (error) {
+      console.error('Checkout failed:', error);
+      console.log('Failed to place order. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   const calculateTotal = () => {
