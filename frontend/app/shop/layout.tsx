@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Topbar from '../components/layout/Topbar';
 import Sidebar from '../components/layout/Sidebar';
+import Footer from '../components/layout/Footer';
+import ScrollToTop from '../components/layout/ScrollToTop';
 import './shop.css';
 
 export default function ShopLayout({
@@ -28,6 +30,8 @@ export default function ShopLayout({
         onClose={handleCloseSidebar}        
       />
       {children}
+      <Footer />
+      <ScrollToTop />
     </div>
   );
 }
