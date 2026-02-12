@@ -36,9 +36,7 @@ export default function CategoryPage() {
             name: p.title,
             price: Number(p.price),
             rating: p.ratingAvg ?? 0,
-            image: decodeURIComponent(
-              p.images?.[0]?.url?.split("/product-images/")[1] || ""
-            )
+            image: p.images?.[0]?.url ?? ""
           }));
 
           setProducts(formattedProducts);
@@ -63,6 +61,12 @@ export default function CategoryPage() {
 
     loadCategoryProducts();
   }, [categorySlug]);
+
+  function resolveImageUrl(url?: string) {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  }
 
   return (
     <>
@@ -89,6 +93,7 @@ export default function CategoryPage() {
                 id={product.id}
                 name={product.name}
                 price={product.price}
+                image={resolveImageUrl(product.image)}
                 rating={product.rating}
                 path='../product'
               />

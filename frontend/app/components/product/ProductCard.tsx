@@ -19,6 +19,8 @@ export default function ProductCard({ id, name, price, image, rating = 4.5, path
     router.push(`${path}/${id}`);
   };
 
+  console.log('ProductCard image value:', image);
+
   return (
     <div className="product-card" onClick={handleClick}>
       <div className="product-image">

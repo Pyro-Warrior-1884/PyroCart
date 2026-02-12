@@ -5,7 +5,7 @@ up:
 	docker compose build --no-cache
 
 prm:
-	docker compose --env-file .env.docker up -d postgres redis minio
+	docker compose --env-file .env.docker up -d postgres redis
 
 back:
 	docker compose --env-file .env.docker up -d backend

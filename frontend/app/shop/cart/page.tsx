@@ -38,7 +38,7 @@ export default function CartPage() {
         productName: item.product?.title || 'Product',
         price: Number(item.product?.price || 0),
         quantity: item.quantity,
-        image: item.product?.images?.[0]?.url
+        image: item.product?.images?.[0]?.url ?? ""
       })) || [];
 
       setCartItems(formattedItems);
@@ -102,6 +102,12 @@ export default function CartPage() {
 
   const total = calculateTotal();
 
+  function resolveImageUrl(url?: string) {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  }
+
   return (
     <>
       <Breadcrumb items={[
@@ -131,7 +137,7 @@ export default function CartPage() {
                     name={item.productName}
                     price={item.price}
                     quantity={item.quantity}
-                    image={item.image}
+                    image={resolveImageUrl(item.image)}
                     onUpdateQuantity={handleUpdateQuantity}
                     onRemove={handleRemoveItem}
                   />

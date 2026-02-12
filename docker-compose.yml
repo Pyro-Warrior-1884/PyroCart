@@ -26,20 +26,6 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
-  minio:
-    image: minio/minio
-    container_name: ecommerce_minio
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
-    ports:
-      - "${MINIO_PORT}:9000"
-      - "9001:9001"
-    volumes:
-      - minio_data:/data
-    restart: unless-stopped
-
   backend:
     build: ./backend
     container_name: ecommerce_backend
@@ -69,4 +55,3 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  minio_data:
