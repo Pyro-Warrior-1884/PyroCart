@@ -1,46 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MinioService } from '../minio/minio.service';
 import { RedisService } from '../redis/redis.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { Product, ProductImage, Category, Review } from '@prisma/client';
+import { Product, Category, Review, ProductImage } from '@prisma/client';
 
 type ProductWithRelations = Product & {
   category: Category;
-  images: ProductImage[];
   reviews: Review[];
+  images: ProductImage[];
 };
-
-type ProductResponse = Omit<ProductWithRelations, 'images'> & {
-  images: {
-    id: number;
-    url: string;
-  }[];
-};
-
-function isMulterFile(file: unknown): file is Express.Multer.File {
-  return (
-    typeof file === 'object' &&
-    file !== null &&
-    'buffer' in file &&
-    'mimetype' in file
-  );
-}
 
 @Injectable()
 export class ProductService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly minioService: MinioService,
     private readonly redis: RedisService,
   ) {}
 
-  async create(
-    dto: CreateProductDto,
-    file?: Express.Multer.File,
-  ): Promise<ProductResponse> {
-    const { category, ...rest } = dto;
+  async create(dto: CreateProductDto): Promise<ProductWithRelations> {
+    const { category, imageUrl, ...rest } = dto;
 
     const product = await this.prisma.product.create({
       data: {
@@ -51,108 +30,69 @@ export class ProductService {
             create: { name: category },
           },
         },
+        ...(imageUrl && {
+          images: {
+            create: {
+              url: imageUrl,
+            },
+          },
+        }),
       },
       include: {
         category: true,
-        images: true,
         reviews: true,
+        images: true,
       },
     });
 
-    if (isMulterFile(file)) {
-      const objectKey = await this.minioService.uploadProductImage(
-        file.buffer,
-        file.mimetype,
-        product.id,
-      );
-
-      await this.prisma.productImage.create({
-        data: {
-          url: objectKey,
-          productId: product.id,
-        },
-      });
-    }
-
     await this.redis.del('products:all');
-
-    return this.mapProduct(product);
+    return product;
   }
 
-  async findAll(): Promise<ProductResponse[]> {
+  async findAll(): Promise<ProductWithRelations[]> {
     const cacheKey = 'products:all';
 
-    const cached = await this.redis.getJson<ProductResponse[]>(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    const cached = await this.redis.getJson<ProductWithRelations[]>(cacheKey);
+    if (cached) return cached;
 
     const products = await this.prisma.product.findMany({
       include: {
         category: true,
-        images: true,
         reviews: true,
+        images: true,
       },
     });
 
-    const mapped = await Promise.all(products.map((p) => this.mapProduct(p)));
-
-    await this.redis.setJson(cacheKey, mapped, 60);
-
-    return mapped;
+    await this.redis.setJson(cacheKey, products, 60);
+    return products;
   }
 
-  async findOne(id: number): Promise<ProductResponse | null> {
+  async findOne(id: number): Promise<ProductWithRelations | null> {
     const cacheKey = `products:${id}`;
 
-    const cached = await this.redis.getJson<ProductResponse>(cacheKey);
-    if (cached) {
-      return cached;
-    }
+    const cached = await this.redis.getJson<ProductWithRelations>(cacheKey);
+    if (cached) return cached;
 
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
         category: true,
-        images: true,
         reviews: true,
+        images: true,
       },
     });
 
-    if (!product) {
-      return null;
-    }
+    if (!product) return null;
 
-    const mapped = await this.mapProduct(product);
-
-    await this.redis.setJson(cacheKey, mapped, 60);
-
-    return mapped;
+    await this.redis.setJson(cacheKey, product, 60);
+    return product;
   }
 
   async update(
     id: number,
     dto: UpdateProductDto,
-    file?: Express.Multer.File,
-  ): Promise<ProductResponse> {
-    const { category, ...rest } = dto;
-
-    if (isMulterFile(file)) {
-      await this.deleteExistingImages(id);
-
-      const objectKey = await this.minioService.uploadProductImage(
-        file.buffer,
-        file.mimetype,
-        id,
-      );
-
-      await this.prisma.productImage.create({
-        data: {
-          url: objectKey,
-          productId: id,
-        },
-      });
-    }
+  ): Promise<ProductWithRelations> {
+    const { category, imageUrl, ...rest } = dto;
 
     await this.prisma.product.update({
       where: { id },
@@ -166,62 +106,34 @@ export class ProductService {
             },
           },
         }),
+        ...(imageUrl && {
+          images: {
+            deleteMany: {},
+            create: { url: imageUrl },
+          },
+        }),
       },
     });
 
     await this.redis.del('products:all');
     await this.redis.del(`products:${id}`);
 
-    const updated = await this.prisma.product.findUniqueOrThrow({
+    return this.prisma.product.findUniqueOrThrow({
       where: { id },
       include: {
         category: true,
-        images: true,
         reviews: true,
+        images: true,
       },
     });
-
-    return this.mapProduct(updated);
   }
 
   async remove(id: number): Promise<Product> {
-    await this.deleteExistingImages(id);
-
     await this.redis.del('products:all');
     await this.redis.del(`products:${id}`);
 
     return this.prisma.product.delete({
       where: { id },
     });
-  }
-
-  private async deleteExistingImages(productId: number): Promise<void> {
-    const images = await this.prisma.productImage.findMany({
-      where: { productId },
-    });
-
-    for (const image of images) {
-      await this.minioService.deleteObject(image.url);
-    }
-
-    await this.prisma.productImage.deleteMany({
-      where: { productId },
-    });
-  }
-
-  private async mapProduct(
-    product: ProductWithRelations,
-  ): Promise<ProductResponse> {
-    const images = await Promise.all(
-      product.images.map(async (img) => ({
-        id: img.id,
-        url: await this.minioService.getSignedUrl(img.url),
-      })),
-    );
-
-    return {
-      ...product,
-      images,
-    };
   }
 }

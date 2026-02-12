@@ -6,12 +6,9 @@ import {
   Param,
   Patch,
   Delete,
-  UploadedFile,
-  UseInterceptors,
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -26,13 +23,10 @@ import { Throttle } from '@nestjs/throttler';
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
+  @Roles(Role.ADMIN)
   @Post()
-  @UseInterceptors(FileInterceptor('image'))
-  create(
-    @Body() dto: CreateProductDto,
-    @UploadedFile() file?: Express.Multer.File,
-  ) {
-    return this.productService.create(dto, file);
+  create(@Body() dto: CreateProductDto) {
+    return this.productService.create(dto);
   }
 
   @Throttle({ default: { limit: 30, ttl: 60 } })
@@ -47,14 +41,10 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
+  @Roles(Role.ADMIN)
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('image'))
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateProductDto,
-    @UploadedFile() file?: Express.Multer.File,
-  ) {
-    return this.productService.update(id, dto, file);
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductDto) {
+    return this.productService.update(id, dto);
   }
 
   @Roles(Role.ADMIN)

@@ -7,7 +7,6 @@ import { AppService } from './app.service';
 
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductModule } from './product/product.module';
-import { MinioModule } from './minio/minio.module';
 import { ReviewModule } from './review/review.module';
 import { AuthModule } from './auth/auth.module';
 
@@ -35,7 +34,6 @@ import { RedisModule } from './redis/redis.module';
     }),
     PrismaModule,
     ProductModule,
-    MinioModule,
     ReviewModule,
     AuthModule,
     CartModule,
