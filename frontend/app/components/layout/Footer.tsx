@@ -11,17 +11,20 @@ export default function Footer() {
 
   return (
     <footer className="footer">
-      {/* Back to top bar */}
-      <div className="footer-back-to-top">
-        <button 
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      <div
+        className="footer-back-to-top"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        style={{ cursor: 'pointer' }}
+      >
+        <button
           className="back-to-top-text"
+          type="button"
+          tabIndex={-1}
         >
           Back to top
         </button>
       </div>
 
-      {/* Main footer content */}
       <div className="footer-main">
         <div className="footer-container">
           <div className="footer-column">

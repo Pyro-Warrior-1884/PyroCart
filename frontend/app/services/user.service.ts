@@ -11,7 +11,7 @@ export async function getMyProfile() {
 }
 
 export async function getAllUsers() {
-  const response = await fetch(`admin/users`, {
+  const response = await fetcher(`/admin/users`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

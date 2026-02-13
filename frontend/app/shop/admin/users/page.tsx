@@ -88,7 +88,7 @@ export default function AdminUsersPage() {
         </div>
 
         {loading ? (
-          <div className="loading-state">Loading users...</div>
+          <div className="loading-state">Loading Users...</div>
         ) : users.length > 0 ? (
           <div className="users-table-container">
             <table className="users-table">
