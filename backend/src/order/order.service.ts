@@ -27,15 +27,15 @@ export class OrderService {
 
   async checkout(userId: number): Promise<Order> {
     const lockKey = `checkout:lock:user:${userId}`;
-
     const acquired = await this.redis.acquireLock(lockKey, 30);
 
     if (!acquired) {
-      throw new ConflictException('Checkout already in progress. Please wait.');
+      throw new ConflictException('Checkout already in progress');
     }
 
     try {
       await this.redis.incr('analytics:checkout:attempt');
+
       return await this.prisma.$transaction(async (tx) => {
         const cart: CartWithItems | null =
           await this.cartService.getCart(userId);
@@ -103,9 +103,8 @@ export class OrderService {
         items: {
           include: {
             product: {
-              select: {
-                id: true,
-                title: true,
+              include: {
+                images: true,
               },
             },
           },
@@ -116,14 +115,15 @@ export class OrderService {
 
   async getUserOrderById(orderId: number, userId: number) {
     const order = await this.prisma.order.findFirst({
-      where: {
-        id: orderId,
-        userId,
-      },
+      where: { id: orderId, userId },
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+              },
+            },
           },
         },
       },
@@ -138,16 +138,18 @@ export class OrderService {
 
   async getAllOrders() {
     return this.prisma.order.findMany({
+      orderBy: { createdAt: 'desc' },
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+              },
+            },
           },
         },
         user: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
       },
     });
   }
@@ -158,7 +160,11 @@ export class OrderService {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: true,
+              },
+            },
           },
         },
         user: true,

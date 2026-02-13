@@ -37,9 +37,7 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
-      minio:
-        condition: service_started
+        condition: service_started        
     restart: unless-stopped
 
   seed:

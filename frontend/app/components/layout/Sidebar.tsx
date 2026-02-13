@@ -18,6 +18,7 @@ export default function Sidebar({
   
   const [userName, setUserName] = useState("User");
   const [userEmail, setUserEmail] = useState("john.doe@example.com");
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     async function loadUser() {
@@ -25,6 +26,7 @@ export default function Sidebar({
         const data = await getMyProfile();
         setUserName(data.name);
         setUserEmail(data.email);
+        setUserRole(data.role);
       } catch (error) {
         console.log("Failed to Load User");
       }
@@ -78,6 +80,12 @@ export default function Sidebar({
               <span className="user-info-label">Email:</span>
               <span className="user-info-value">{userEmail}</span>
             </div>
+            {userRole === "ADMIN" && (
+              <div className="user-info-item">
+                <span className="user-info-label">Role:</span>
+                <span className="user-info-value admin-badge">Admin</span>
+              </div>
+            )}
           </div>
 
           <div className="sidebar-menu">
@@ -98,6 +106,18 @@ export default function Sidebar({
               </svg>
               My Orders
             </Link>
+
+            {userRole === "ADMIN" && (
+              <Link href="/shop/admin/users" className="sidebar-menu-item admin-item">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Show All Users
+              </Link>
+            )}
 
             <button 
               className="sidebar-menu-item logout" 

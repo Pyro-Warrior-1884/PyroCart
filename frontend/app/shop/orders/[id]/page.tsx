@@ -30,6 +30,12 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
+  function resolveImageUrl(url?: string) {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  }
+
   useEffect(() => {
     async function loadOrder() {
       try {
@@ -46,7 +52,7 @@ export default function OrderDetailPage() {
             productName: item.product?.title || 'Product',
             price: Number(item.price),
             quantity: item.quantity,
-            image: item.product?.images?.[0]?.url
+            image: resolveImageUrl(item.product?.images?.[0]?.url),
           }))
         };
 

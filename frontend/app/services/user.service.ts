@@ -9,3 +9,19 @@ export async function getMyProfile() {
 
   return res.json();
 }
+
+export async function getAllUsers() {
+  const response = await fetch(`admin/users`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+
+  return response.json();
+}
