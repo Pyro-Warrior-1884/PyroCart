@@ -17,6 +17,7 @@ import { OrderModule } from './order/order.module';
 import { UserModule } from './user/user.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RedisModule } from './redis/redis.module';
+import { OpensearchModule } from './opensearch/opensearch.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RedisModule } from './redis/redis.module';
     OrderModule,
     UserModule,
     RedisModule,
+    OpensearchModule,
   ],
   controllers: [AppController],
   providers: [

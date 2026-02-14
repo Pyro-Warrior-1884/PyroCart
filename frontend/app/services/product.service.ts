@@ -1,5 +1,27 @@
 import { fetcher } from "@/app/lib/fetcher";
 
+export interface ProductSearchResult {
+  id: number;
+  name: string;
+  price: number;
+}
+
+export async function searchProducts(
+  query: string
+): Promise<ProductSearchResult[]> {
+  if (!query.trim()) return [];
+
+  const res = await fetcher(
+    `/products/search?q=${encodeURIComponent(query)}`
+  );
+
+  if (!res.ok) {
+    throw new Error("Search failed");
+  }
+
+  return res.json();
+}
+
 export async function getAllProducts() {
   const res = await fetcher("/products");
 

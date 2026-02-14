@@ -17,6 +17,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../auth/roles.enum';
 import { Throttle } from '@nestjs/throttler';
+import { Query } from '@nestjs/common';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -51,5 +52,13 @@ export class ProductController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productService.remove(id);
+  }
+
+  @Throttle({ default: { limit: 100, ttl: 60 } })
+  @Get('search')
+  @UseGuards()
+  search(@Query('q') query: string) {
+    if (!query || query.length < 2) return [];
+    return this.productService.search(query);
   }
 }

@@ -4,6 +4,7 @@ import { RedisService } from '../redis/redis.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product, Category, Review, ProductImage } from '@prisma/client';
+import { OpensearchService } from '../opensearch/opensearch.service';
 
 type ProductWithRelations = Product & {
   category: Category;
@@ -16,6 +17,7 @@ export class ProductService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly openSearch: OpensearchService,
   ) {}
 
   async create(dto: CreateProductDto): Promise<ProductWithRelations> {
@@ -32,9 +34,7 @@ export class ProductService {
         },
         ...(imageUrl && {
           images: {
-            create: {
-              url: imageUrl,
-            },
+            create: { url: imageUrl },
           },
         }),
       },
@@ -46,6 +46,9 @@ export class ProductService {
     });
 
     await this.redis.del('products:all');
+
+    this.openSearch.indexProduct(product);
+
     return product;
   }
 
@@ -94,7 +97,7 @@ export class ProductService {
   ): Promise<ProductWithRelations> {
     const { category, imageUrl, ...rest } = dto;
 
-    await this.prisma.product.update({
+    const product = await this.prisma.product.update({
       where: { id },
       data: {
         ...rest,
@@ -113,27 +116,35 @@ export class ProductService {
           },
         }),
       },
-    });
-
-    await this.redis.del('products:all');
-    await this.redis.del(`products:${id}`);
-
-    return this.prisma.product.findUniqueOrThrow({
-      where: { id },
       include: {
         category: true,
         reviews: true,
         images: true,
       },
     });
+
+    await this.redis.del('products:all');
+    await this.redis.del(`products:${id}`);
+
+    this.openSearch.indexProduct(product);
+
+    return product;
   }
 
   async remove(id: number): Promise<Product> {
     await this.redis.del('products:all');
     await this.redis.del(`products:${id}`);
 
-    return this.prisma.product.delete({
+    const product = await this.prisma.product.delete({
       where: { id },
     });
+
+    this.openSearch.deleteProduct(id);
+
+    return product;
+  }
+
+  async search(query: string) {
+    return this.openSearch.search(query);
   }
 }

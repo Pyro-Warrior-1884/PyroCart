@@ -26,6 +26,24 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
+  opensearch:
+    image: opensearchproject/opensearch:2.11.1
+    container_name: ecommerce_opensearch
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    restart: unless-stopped
+
   backend:
     build: ./backend
     container_name: ecommerce_backend
@@ -37,7 +55,9 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started        
+        condition: service_started
+      opensearch:
+        condition: service_started
     restart: unless-stopped
 
   seed:
@@ -53,3 +73,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  opensearch_data:
