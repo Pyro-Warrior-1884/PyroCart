@@ -19,12 +19,13 @@ export class OpensearchService implements OnModuleInit {
       await this.client.index({
         index: 'products',
         id: product.id.toString(),
+        refresh: true,
         body: {
           id: product.id,
           name: product.name,
-          description: product.description,
+          description: product.description ?? '',
           price: product.price,
-          category: product.category?.name,
+          category: product.category?.name ?? '',
           createdAt: product.createdAt,
         },
       });
@@ -38,6 +39,7 @@ export class OpensearchService implements OnModuleInit {
       await this.client.delete({
         index: 'products',
         id: productId.toString(),
+        refresh: true,
       });
     } catch {
       this.logger.warn(`Failed to delete product ${productId} from OpenSearch`);
@@ -49,16 +51,37 @@ export class OpensearchService implements OnModuleInit {
       index: 'products',
       body: {
         query: {
-          multi_match: {
-            query,
-            fields: ['name^3', 'description'],
-            fuzziness: 'AUTO',
+          bool: {
+            should: [
+              {
+                multi_match: {
+                  query,
+                  fields: ['name^4', 'description'],
+                  fuzziness: 'AUTO',
+                  operator: 'and',
+                  minimum_should_match: '70%',
+                },
+              },
+
+              {
+                prefix: {
+                  name: {
+                    value: query.toLowerCase(),
+                    boost: 2,
+                  },
+                },
+              },
+            ],
           },
         },
         size: 10,
       },
     });
 
-    return result.body.hits.hits.map((hit) => hit._source);
+    const hits = result.body.hits.hits.map((hit) => hit._source);
+
+    this.logger.debug(`Search "${query}" → ${hits.length} results`);
+
+    return hits;
   }
 }

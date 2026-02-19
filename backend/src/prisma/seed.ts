@@ -1,7 +1,12 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import axios from 'axios';
+import { Client as OpenSearchClient } from '@opensearch-project/opensearch';
 
 const prisma = new PrismaClient();
+
+const opensearch = new OpenSearchClient({
+  node: process.env.OPENSEARCH_URL || 'http://opensearch:9200',
+});
 
 type FakeStoreProduct = {
   id: number;
@@ -17,26 +22,17 @@ type FakeStoreProduct = {
 };
 
 async function seed() {
-  console.log('[SEED] Starting product and category seeding');
+  console.log('[SEED] Starting product seeding');
 
   const { data: products } = await axios.get<FakeStoreProduct[]>(
     'https://fakestoreapi.com/products',
   );
 
-  console.log(`[SEED] Fetched ${products.length} products`);
-
-  let created = 0;
-  let updated = 0;
+  let indexed = 0;
 
   for (const product of products) {
-    const exists = await prisma.product.findUnique({
+    const dbProduct = await prisma.product.upsert({
       where: { externalId: product.id },
-      select: { id: true },
-    });
-
-    await prisma.product.upsert({
-      where: { externalId: product.id },
-
       update: {
         title: product.title,
         description: product.description,
@@ -45,20 +41,17 @@ async function seed() {
         ratingCount: product.rating.count,
         isActive: true,
         stock: 10,
-
         category: {
           connectOrCreate: {
             where: { name: product.category },
             create: { name: product.category },
           },
         },
-
         images: {
           deleteMany: {},
           create: [{ url: product.image }],
         },
       },
-
       create: {
         externalId: product.id,
         title: product.title,
@@ -68,37 +61,45 @@ async function seed() {
         ratingCount: product.rating.count,
         isActive: true,
         stock: 10,
-
         category: {
           connectOrCreate: {
             where: { name: product.category },
             create: { name: product.category },
           },
         },
-
         images: {
           create: [{ url: product.image }],
         },
       },
+      include: {
+        category: true,
+      },
     });
 
-    if (exists) {
-      updated++;
-      console.log(`[SEED] Updated product (externalId=${product.id})`);
-    } else {
-      created++;
-    }
+    await opensearch.index({
+      index: 'products',
+      id: dbProduct.id.toString(),
+      refresh: true,
+      body: {
+        id: dbProduct.id,
+        name: dbProduct.title,
+        description: dbProduct.description ?? '',
+        price: Number(dbProduct.price),
+        category: dbProduct.category?.name ?? '',
+        createdAt: dbProduct.createdAt,
+      },
+    });
+
+    indexed++;
+    console.log(`[SEED] Indexed product ${indexed}/${products.length}`);
   }
 
-  console.log('[SEED] Seeding completed');
-  console.log(
-    `[SEED] Summary -> Created: ${created}, Updated: ${updated}, Total: ${products.length}`,
-  );
+  console.log(`[SEED] Completed. Indexed ${indexed} products`);
 }
 
 seed()
   .catch((error) => {
-    console.error('[SEED] Seeding failed', error);
+    console.error('[SEED] Failed', error);
     process.exit(1);
   })
   .finally(async () => {

@@ -69,6 +69,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      opensearch:
+        condition: service_started
 
 volumes:
   postgres_data:

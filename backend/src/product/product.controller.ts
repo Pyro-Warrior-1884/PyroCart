@@ -30,6 +30,14 @@ export class ProductController {
     return this.productService.create(dto);
   }
 
+  @Throttle({ default: { limit: 100, ttl: 60 } })
+  @Get('search')
+  @UseGuards()
+  search(@Query('q') query: string) {
+    if (!query || query.length < 2) return [];
+    return this.productService.search(query);
+  }
+
   @Throttle({ default: { limit: 30, ttl: 60 } })
   @Get()
   findAll() {
@@ -52,13 +60,5 @@ export class ProductController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.productService.remove(id);
-  }
-
-  @Throttle({ default: { limit: 100, ttl: 60 } })
-  @Get('search')
-  @UseGuards()
-  search(@Query('q') query: string) {
-    if (!query || query.length < 2) return [];
-    return this.productService.search(query);
   }
 }

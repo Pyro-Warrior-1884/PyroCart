@@ -5,5 +5,6 @@ import { OpensearchService } from './opensearch.service';
 @Module({
   controllers: [OpensearchController],
   providers: [OpensearchService],
+  exports: [OpensearchService],
 })
 export class OpensearchModule {}
