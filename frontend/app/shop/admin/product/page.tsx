@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Breadcrumb from '@/app/components/layout/BreadCrumb';
 import { getMyProfile } from '@/app/services/user.service';
@@ -69,6 +69,7 @@ export default function AdminOperationsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [sortEntries, setSortEntries] = useState<SortEntry[]>([]);
+  const [readRefreshKey, setReadRefreshKey] = useState(0);
 
   useEffect(() => {
     async function checkAdmin() {
@@ -93,7 +94,7 @@ export default function AdminOperationsPage() {
     if (selectedOperation === 'READ' && isAdmin) loadProducts();
   }, [selectedOperation, isAdmin]);
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setProductsLoading(true);
       const data = await getAllProducts();
@@ -103,9 +104,27 @@ export default function AdminOperationsPage() {
     } finally {
       setProductsLoading(false);
     }
-  };
+  }, []);
 
-  // 1st click → asc | 2nd click → desc | 3rd click → remove
+  useEffect(() => {
+    if (!isAdmin || selectedOperation !== 'READ') return;
+
+    loadProducts();
+
+    const onFocus = () => loadProducts();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') loadProducts();
+    };
+
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [isAdmin, selectedOperation, readRefreshKey, loadProducts]);
+
   const handleSort = (field: SortField) => {
     setSortEntries((prev) => {
       const idx = prev.findIndex((e) => e.field === field);
@@ -147,7 +166,12 @@ export default function AdminOperationsPage() {
   }, [products, sortEntries]);
 
   const handleOperationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedOperation(e.target.value as Operation);
+    const value = e.target.value as Operation;
+    setSelectedOperation(value);
+
+    if (value === 'READ') {
+      setReadRefreshKey((k) => k + 1);
+    }
   };
 
   const handleProductClick = (productId: number) => {
@@ -240,10 +264,8 @@ export default function AdminOperationsPage() {
 
                   <thead>
                     <tr>
-                      {/* ID — not sortable */}
                       <th className="col-center">ID</th>
 
-                      {/* All 5 data columns — all sortable including Price */}
                       {COLUMNS.map(({ field, label, align }) => {
                         const { priority, direction } = getSortInfo(field);
                         const isActive = priority !== null;
