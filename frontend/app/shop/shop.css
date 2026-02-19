@@ -3300,3 +3300,538 @@
     padding: 0.25rem 0.625rem;
   }
 }
+/* ============================================================
+   REPLACE THESE CSS CLASSES IN shop.css
+   ============================================================ */
+
+/* Products Table Styles for Admin Operations */
+
+.operation-content-full {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.products-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1.25rem 1.75rem;
+  background: white;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.products-table-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.products-table-count {
+  font-size: 0.8rem;
+  color: #fff;
+  font-weight: 600;
+  margin: 0;
+  background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  padding: 0.3rem 0.875rem;
+  border-radius: 50px;
+  letter-spacing: 0.02em;
+}
+
+.products-loading {
+  padding: 5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.products-loading p {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.products-table-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.products-table thead {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.products-table th {
+  padding: 0.875rem 1.25rem;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  border-bottom: none;
+}
+
+.products-table thead th.col-left {
+  text-align: left;
+}
+
+.products-table tbody {
+  background: white;
+}
+
+.product-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #f7f7f7;
+}
+
+.product-row::before {
+  display: none;
+}
+
+.product-row:hover {
+  background: #fffbf5;
+}
+
+.product-row:active {
+  background: #fef3c7;
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.products-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.7rem;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.product-id {
+  font-weight: 600;
+  color: #d1d5db;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.product-name-cell {
+  overflow: hidden;
+  text-align: left;
+}
+
+.product-name-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.product-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  transition: transform 0.2s;
+}
+
+.product-row:hover .product-icon {
+  transform: scale(1.08);
+}
+
+.product-name-text {
+  font-weight: 500;
+  color: #374151;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  transition: color 0.15s;
+}
+
+.product-row:hover .product-name-text {
+  color: #111827;
+}
+
+.product-price-cell {
+  white-space: nowrap;
+}
+
+.product-price-badge {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  color: #111827;
+  font-weight: 700;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.01em;
+  box-shadow: none;
+  transition: none;
+}
+
+.product-row:hover .product-price-badge {
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.product-stock-cell {
+  white-space: nowrap;
+}
+
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.stock-badge.in-stock {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+.stock-badge.in-stock::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #16a34a;
+  flex-shrink: 0;
+}
+
+.stock-badge.out-of-stock {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.stock-badge.out-of-stock::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #dc2626;
+  flex-shrink: 0;
+}
+
+.product-date {
+  color: #9ca3af;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}
+
+.products-empty {
+  padding: 5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.products-empty svg {
+  color: #e5e7eb;
+}
+
+.products-empty h3 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.products-empty p {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+@media (max-width: 1200px) {
+  .products-table {
+    table-layout: auto;
+    min-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-table-header {
+    padding: 1.25rem;
+  }
+
+  .products-table-title {
+    font-size: 1rem;
+  }
+
+  .products-table th,
+  .products-table td {
+    padding: 0.875rem 0.875rem;
+  }
+
+  .products-table th {
+    font-size: 0.6rem;
+  }
+
+  .products-table td {
+    font-size: 0.8rem;
+  }
+}
+
+.col-center {
+  text-align: center;
+}
+
+.col-left {
+  text-align: left;
+}
+
+.products-table-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Sortable th */
+.th-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.th-sortable:hover {
+  background: #f5f5f5;
+}
+
+.th-sorted {
+  background: #fff7ed;
+  color: #f97316 !important;
+}
+
+.th-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.th-inner-left {
+  justify-content: flex-start;
+}
+
+.th-inner-center {
+  justify-content: center;
+  width: 100%;
+}
+
+/* Sort icon: priority badge + chevrons */
+.sort-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.sort-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: #f97316;
+  color: white;
+  font-size: 0.55rem;
+  font-weight: 800;
+  border-radius: 50%;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sort-chevrons {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 0;
+}
+
+.sort-chevron {
+  color: #d1d5db;
+  transition: color 0.15s ease;
+  display: block;
+}
+
+.sort-chevron-active {
+  color: #f97316;
+}
+
+.th-sortable:hover .sort-chevron {
+  color: #9ca3af;
+}
+
+.th-sortable:hover .sort-chevron-active {
+  color: #f97316;
+}
+
+/* Sort status bar */
+.sort-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.sort-status-bar-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #9ca3af;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Sort chips */
+.sort-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.sort-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.375rem;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #92400e;
+  animation: chipIn 0.18s ease;
+}
+
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.sort-chip-priority {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  background: #f97316;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sort-chip-label {
+  color: #78350f;
+  font-weight: 700;
+}
+
+.sort-chip-dir {
+  color: #f97316;
+  font-weight: 700;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.sort-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: #f97316;
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+  margin-left: 1px;
+}
+
+.sort-chip-remove:hover {
+  background: #f97316;
+  color: white;
+}
+
+/* Reset button */
+.sort-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sort-reset-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.sort-reset-btn svg {
+  flex-shrink: 0;
+  transition: transform 0.35s ease;
+}
+
+.sort-reset-btn:hover svg {
+  transform: rotate(-180deg);
+}

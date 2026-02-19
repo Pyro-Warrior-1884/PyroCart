@@ -6,6 +6,25 @@ export interface ProductSearchResult {
   price: number;
 }
 
+export interface Product {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  stock: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  category: {
+    id: number;
+    name: string;
+  };
+  images: Array<{
+    id: number;
+    url: string;
+  }>;
+}
+
 export async function searchProducts(
   query: string
 ): Promise<ProductSearchResult[]> {
@@ -22,14 +41,23 @@ export async function searchProducts(
   return res.json();
 }
 
-export async function getAllProducts() {
-  const res = await fetcher("/products");
+export async function getAllProducts(): Promise<Product[]> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  
+  const response = await fetcher(`/products`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    credentials: 'include',
+  });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch products");
+  if (!response.ok) {
+    throw new Error('Failed to fetch products');
   }
 
-  return res.json();
+  return response.json();
 }
 
 export async function getProductById(id: number) {
