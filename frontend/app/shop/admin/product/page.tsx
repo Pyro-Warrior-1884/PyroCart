@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Breadcrumb from '@/app/components/layout/BreadCrumb';
 import { getMyProfile } from '@/app/services/user.service';
 import { getAllProducts, Product } from '@/app/services/product.service';
+import ProductEditForm from '@/app/components/admin/ProductEditForm';
 import '../../shop.css';
 
 type Operation = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE';
@@ -24,7 +25,6 @@ const FIELD_LABELS: Record<SortField, string> = {
   updatedAt: 'Updated',
 };
 
-// Column config: field → header label + alignment
 const COLUMNS: { field: SortField; label: string; align: 'left' | 'center' }[] = [
   { field: 'title',     label: 'Product Name', align: 'left'   },
   { field: 'price',     label: 'Price',        align: 'center' },
@@ -33,7 +33,6 @@ const COLUMNS: { field: SortField; label: string; align: 'left' | 'center' }[] =
   { field: 'updatedAt', label: 'Updated At',   align: 'center' },
 ];
 
-// colgroup widths: ID + one per COLUMN
 const COL_WIDTHS = ['60px', '35%', '110px', '100px', '160px', '160px'];
 
 function SortIcon({ priority, direction }: { priority: number | null; direction: SortDirection | null }) {
@@ -70,6 +69,18 @@ export default function AdminOperationsPage() {
   const [productsLoading, setProductsLoading] = useState(false);
   const [sortEntries, setSortEntries] = useState<SortEntry[]>([]);
   const [readRefreshKey, setReadRefreshKey] = useState(0);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     async function checkAdmin() {
@@ -91,7 +102,9 @@ export default function AdminOperationsPage() {
   }, [router]);
 
   useEffect(() => {
-    if (selectedOperation === 'READ' && isAdmin) loadProducts();
+    if ((selectedOperation === 'READ' || selectedOperation === 'UPDATE') && isAdmin) {
+      loadProducts();
+    }
   }, [selectedOperation, isAdmin]);
 
   const loadProducts = useCallback(async () => {
@@ -105,25 +118,6 @@ export default function AdminOperationsPage() {
       setProductsLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    if (!isAdmin || selectedOperation !== 'READ') return;
-
-    loadProducts();
-
-    const onFocus = () => loadProducts();
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') loadProducts();
-    };
-
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onVisibility);
-
-    return () => {
-      window.removeEventListener('focus', onFocus);
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, [isAdmin, selectedOperation, readRefreshKey, loadProducts]);
 
   const handleSort = (field: SortField) => {
     setSortEntries((prev) => {
@@ -146,9 +140,17 @@ export default function AdminOperationsPage() {
     return { priority: idx, direction: sortEntries[idx].direction };
   };
 
+  // Filter products by search
+  const filteredProducts = useMemo(() => {
+    if (!debouncedSearch.trim()) return products;
+    const query = debouncedSearch.toLowerCase();
+    return products.filter(p => p.title.toLowerCase().includes(query));
+  }, [products, debouncedSearch]);
+
+  // Sort filtered products
   const sortedProducts = useMemo(() => {
-    if (sortEntries.length === 0) return products;
-    return [...products].sort((a, b) => {
+    if (sortEntries.length === 0) return filteredProducts;
+    return [...filteredProducts].sort((a, b) => {
       for (const { field, direction } of sortEntries) {
         const dir = direction === 'asc' ? 1 : -1;
         let cmp = 0;
@@ -163,11 +165,14 @@ export default function AdminOperationsPage() {
       }
       return 0;
     });
-  }, [products, sortEntries]);
+  }, [filteredProducts, sortEntries]);
 
   const handleOperationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as Operation;
     setSelectedOperation(value);
+    setEditingProductId(null);
+    setSearchQuery('');
+    setSortEntries([]);
 
     if (value === 'READ') {
       setReadRefreshKey((k) => k + 1);
@@ -175,7 +180,16 @@ export default function AdminOperationsPage() {
   };
 
   const handleProductClick = (productId: number) => {
-    router.push(`/shop/product/${productId}`);
+    if (selectedOperation === 'READ') {
+      router.push(`/shop/product/${productId}`);
+    } else if (selectedOperation === 'UPDATE') {
+      setEditingProductId(productId);
+    }
+  };
+
+  const handleBackFromEdit = () => {
+    setEditingProductId(null);
+    loadProducts();
   };
 
   const formatDate = (dateString: string) => {
@@ -190,6 +204,155 @@ export default function AdminOperationsPage() {
   };
 
   const formatPrice = (price: number) => `₹${parseFloat(price.toString()).toFixed(2)}`;
+
+  const renderProductsTable = (isUpdateMode: boolean = false) => {
+    return (
+      <div className="operation-content-full">
+        <div className="products-table-header">
+          <div className="products-table-header-left">
+            <h2 className="products-table-title">
+              {isUpdateMode ? 'Select Product to Edit' : 'All Products'}
+            </h2>
+            <p className="products-table-count">
+              {sortedProducts.length} of {products.length} {products.length === 1 ? 'Product' : 'Products'}
+            </p>
+          </div>
+
+          {isUpdateMode && (
+            <div className="search-bar-container">
+              <svg className="search-bar-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search products by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-bar-input"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="search-bar-clear"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          )}
+
+          {sortEntries.length > 0 && (
+            <div className="sort-status-bar">
+              <span className="sort-status-bar-label">Sorted by:</span>
+              <div className="sort-chips">
+                {sortEntries.map((entry, idx) => (
+                  <span key={entry.field} className="sort-chip">
+                    <span className="sort-chip-priority">{idx + 1}</span>
+                    <span className="sort-chip-label">{FIELD_LABELS[entry.field]}</span>
+                    <span className="sort-chip-dir">{entry.direction === 'asc' ? '↑' : '↓'}</span>
+                    <button
+                      className="sort-chip-remove"
+                      onClick={(e) => { e.stopPropagation(); handleRemoveSortEntry(entry.field); }}
+                      title={`Remove ${FIELD_LABELS[entry.field]} sort`}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <button className="sort-reset-btn" onClick={handleResetSort}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                Reset all
+              </button>
+            </div>
+          )}
+        </div>
+
+        {productsLoading ? (
+          <div className="products-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading products...</p>
+          </div>
+        ) : sortedProducts.length > 0 ? (
+          <div className="products-table-container">
+            <table className="products-table">
+              <colgroup>
+                {COL_WIDTHS.map((w, i) => <col key={i} style={{ width: w }} />)}
+              </colgroup>
+
+              <thead>
+                <tr>
+                  <th className="col-center">ID</th>
+
+                  {COLUMNS.map(({ field, label, align }) => {
+                    const { priority, direction } = getSortInfo(field);
+                    const isActive = priority !== null;
+                    return (
+                      <th
+                        key={field}
+                        className={`col-${align} th-sortable ${isActive ? 'th-sorted' : ''}`}
+                        onClick={() => handleSort(field)}
+                        title={`Click to sort by ${FIELD_LABELS[field]}`}
+                      >
+                        <span className={`th-inner th-inner-${align}`}>
+                          {label}
+                          <SortIcon priority={priority} direction={direction} />
+                        </span>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+
+              <tbody>
+                {sortedProducts.map((product) => (
+                  <tr
+                    key={product.id}
+                    onClick={() => handleProductClick(product.id)}
+                    className="product-row"
+                  >
+                    <td className="product-id col-center">#{product.id}</td>
+
+                    <td className="product-name-cell col-left">
+                      <div className="product-name-wrapper">
+                        <span className="product-icon">📦</span>
+                        <span className="product-name-text">{product.title}</span>
+                      </div>
+                    </td>
+
+                    <td className="product-price-cell col-center">
+                      <span className="product-price-badge">{formatPrice(product.price)}</span>
+                    </td>
+
+                    <td className="product-stock-cell col-center">
+                      <span className={`stock-badge ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
+                        {product.stock > 0 ? `${product.stock} units` : 'Out of stock'}
+                      </span>
+                    </td>
+
+                    <td className="product-date col-center">{formatDate(product.createdAt)}</td>
+                    <td className="product-date col-center">{formatDate(product.updatedAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="products-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            <h3>No Products Found</h3>
+            <p>{searchQuery ? 'No products match your search.' : 'There are no products in the database yet.'}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderOperationContent = () => {
     switch (selectedOperation) {
@@ -210,141 +373,13 @@ export default function AdminOperationsPage() {
         );
 
       case 'READ':
-        return (
-          <div className="operation-content-full">
-            <div className="products-table-header">
-              <div className="products-table-header-left">
-                <h2 className="products-table-title">All Products</h2>
-                <p className="products-table-count">
-                  {products.length} {products.length === 1 ? 'Product' : 'Products'}
-                </p>
-              </div>
-
-              {sortEntries.length > 0 && (
-                <div className="sort-status-bar">
-                  <span className="sort-status-bar-label">Sorted by:</span>
-                  <div className="sort-chips">
-                    {sortEntries.map((entry, idx) => (
-                      <span key={entry.field} className="sort-chip">
-                        <span className="sort-chip-priority">{idx + 1}</span>
-                        <span className="sort-chip-label">{FIELD_LABELS[entry.field]}</span>
-                        <span className="sort-chip-dir">{entry.direction === 'asc' ? '↑' : '↓'}</span>
-                        <button
-                          className="sort-chip-remove"
-                          onClick={(e) => { e.stopPropagation(); handleRemoveSortEntry(entry.field); }}
-                          title={`Remove ${FIELD_LABELS[entry.field]} sort`}
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <button className="sort-reset-btn" onClick={handleResetSort}>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                      <path d="M3 3v5h5" />
-                    </svg>
-                    Reset all
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {productsLoading ? (
-              <div className="products-loading">
-                <div className="loading-spinner"></div>
-                <p>Loading products...</p>
-              </div>
-            ) : products.length > 0 ? (
-              <div className="products-table-container">
-                <table className="products-table">
-                  <colgroup>
-                    {COL_WIDTHS.map((w, i) => <col key={i} style={{ width: w }} />)}
-                  </colgroup>
-
-                  <thead>
-                    <tr>
-                      <th className="col-center">ID</th>
-
-                      {COLUMNS.map(({ field, label, align }) => {
-                        const { priority, direction } = getSortInfo(field);
-                        const isActive = priority !== null;
-                        return (
-                          <th
-                            key={field}
-                            className={`col-${align} th-sortable ${isActive ? 'th-sorted' : ''}`}
-                            onClick={() => handleSort(field)}
-                            title={`Click to sort by ${FIELD_LABELS[field]}`}
-                          >
-                            <span className={`th-inner th-inner-${align}`}>
-                              {label}
-                              <SortIcon priority={priority} direction={direction} />
-                            </span>
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {sortedProducts.map((product) => (
-                      <tr
-                        key={product.id}
-                        onClick={() => handleProductClick(product.id)}
-                        className="product-row"
-                      >
-                        <td className="product-id col-center">#{product.id}</td>
-
-                        <td className="product-name-cell col-left">
-                          <div className="product-name-wrapper">
-                            <span className="product-icon">📦</span>
-                            <span className="product-name-text">{product.title}</span>
-                          </div>
-                        </td>
-
-                        <td className="product-price-cell col-center">
-                          <span className="product-price-badge">{formatPrice(product.price)}</span>
-                        </td>
-
-                        <td className="product-stock-cell col-center">
-                          <span className={`stock-badge ${product.stock > 0 ? 'in-stock' : 'out-of-stock'}`}>
-                            {product.stock > 0 ? `${product.stock} units` : 'Out of stock'}
-                          </span>
-                        </td>
-
-                        <td className="product-date col-center">{formatDate(product.createdAt)}</td>
-                        <td className="product-date col-center">{formatDate(product.updatedAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="products-empty">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                </svg>
-                <h3>No Products Found</h3>
-                <p>There are no products in the database yet.</p>
-              </div>
-            )}
-          </div>
-        );
+        return renderProductsTable(false);
 
       case 'UPDATE':
-        return (
-          <div className="operation-content">
-            <div className="operation-icon update-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-              </svg>
-            </div>
-            <h2 className="operation-title">Update Operation</h2>
-            <p className="operation-description">Modify existing records, update product information, or edit user details.</p>
-            <div className="operation-placeholder"><p>Edit form will be displayed here</p></div>
-          </div>
-        );
+        if (editingProductId) {
+          return <ProductEditForm productId={editingProductId} onBack={handleBackFromEdit} />;
+        }
+        return renderProductsTable(true);
 
       case 'DELETE':
         return (
@@ -391,6 +426,7 @@ export default function AdminOperationsPage() {
   return (
     <>
       <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/product` }]} />
+      
       <main className="shop-main">
         <div className="operations-header">
           <h1 className="operations-page-title">Admin Operations</h1>
