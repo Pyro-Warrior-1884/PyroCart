@@ -1,17 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { updateProduct } from '@/app/services/product.service';
+import { useState } from 'react';
+import { createProduct } from '@/app/services/product.service';
 
-interface ProductEditFormProps {
-  productId: number;
+interface ProductCreateFormProps {
   onBack: () => void;
+  onSuccess: () => void;
 }
 
-export default function ProductEditForm({ productId, onBack }: ProductEditFormProps) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+export default function ProductCreateForm({ onBack, onSuccess }: ProductCreateFormProps) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -22,75 +19,46 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
     imageUrl: '',
   });
 
-  useEffect(() => {
-    loadProduct();
-  }, [productId]);
-
-  const loadProduct = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to load product');
-
-      const product = await response.json();
-      setFormData({
-        title: product.title || '',
-        description: product.description || '',
-        price: product.price.toString() || '',
-        stock: product.stock.toString() || '',
-        category: product.category?.name || '',
-        imageUrl: product.images?.[0]?.url || '',
-      });
-    } catch (err) {
-      console.error('Failed to load product:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      setSaving(true);
+        setSaving(true);
 
-      await updateProduct(productId, {
+        await createProduct({
         title: formData.title,
         description: formData.description,
         price: Number(formData.price),
         stock: Number(formData.stock),
         category: formData.category,
-      });
+        imageUrl: formData.imageUrl || '',
+        } as any);
 
-      alert('Product updated successfully!');
-      onBack();
+        alert('Product created successfully!');
+        onSuccess();
     } catch (err) {
-      console.error('Failed to update product:', err);
-      alert('Failed to update product. Please try again.');
+        console.error('Failed to create product:', err);
+        alert('Failed to create product. Please try again.');
     } finally {
-      setSaving(false);
+        setSaving(false);
     }
-  };
+    };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  if (loading) {
-    return (
-      <div className="edit-form-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading product...</p>
-      </div>
-    );
-  }
+  const handleReset = () => {
+    setFormData({
+      title: '',
+      description: '',
+      price: '',
+      stock: '',
+      category: '',
+      imageUrl: '',
+    });
+  };
 
   return (
     <div className="edit-form-container">
@@ -99,9 +67,9 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
-          Back to Products
+          Back to Operations
         </button>
-        <h2 className="edit-form-title">Edit Product #{productId}</h2>
+        <h2 className="edit-form-title">Create New Product</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="edit-form">
@@ -114,6 +82,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
             value={formData.title}
             onChange={handleChange}
             className="form-input"
+            placeholder="Enter product name"
             required
           />
         </div>
@@ -127,6 +96,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
             onChange={handleChange}
             className="form-textarea"
             rows={4}
+            placeholder="Enter product description"
             required
           />
         </div>
@@ -143,6 +113,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
               className="form-input"
               step="0.01"
               min="0"
+              placeholder="0.00"
               required
             />
           </div>
@@ -157,6 +128,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
               onChange={handleChange}
               className="form-input"
               min="0"
+              placeholder="0"
               required
             />
           </div>
@@ -171,6 +143,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
             value={formData.category}
             onChange={handleChange}
             className="form-input"
+            placeholder="e.g., electronics, clothing, books"
             required
           />
         </div>
@@ -192,8 +165,16 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
           <button type="button" onClick={onBack} className="btn-cancel">
             Cancel
           </button>
+          <button 
+            type="button" 
+            onClick={handleReset} 
+            className="btn-reset"
+            disabled={saving}
+          >
+            Reset Form
+          </button>
           <button type="submit" disabled={saving} className="btn-submit">
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? 'Creating...' : 'Create Product'}
           </button>
         </div>
       </form>

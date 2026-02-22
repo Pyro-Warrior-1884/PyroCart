@@ -4,9 +4,13 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Breadcrumb from '@/app/components/layout/BreadCrumb';
 import { getMyProfile } from '@/app/services/user.service';
-import { getAllProducts, Product } from '@/app/services/product.service';
+import { getAllProducts, Product, deleteProduct } from '@/app/services/product.service';
 import ProductEditForm from '@/app/components/admin/ProductEditForm';
+import ProductCreateForm from '@/app/components/admin/ProductCreateForm';
+import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
 import '../../shop.css';
+import '../../create.css';
+import '../../dropdown.css';
 
 type Operation = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE';
 type SortField = 'title' | 'price' | 'stock' | 'createdAt' | 'updatedAt';
@@ -72,8 +76,10 @@ export default function AdminOperationsPage() {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{ id: number; name: string } | null>(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -102,7 +108,7 @@ export default function AdminOperationsPage() {
   }, [router]);
 
   useEffect(() => {
-    if ((selectedOperation === 'READ' || selectedOperation === 'UPDATE') && isAdmin) {
+    if ((selectedOperation === 'READ' || selectedOperation === 'UPDATE' || selectedOperation === 'DELETE') && isAdmin) {
       loadProducts();
     }
   }, [selectedOperation, isAdmin]);
@@ -140,14 +146,12 @@ export default function AdminOperationsPage() {
     return { priority: idx, direction: sortEntries[idx].direction };
   };
 
-  // Filter products by search
   const filteredProducts = useMemo(() => {
     if (!debouncedSearch.trim()) return products;
     const query = debouncedSearch.toLowerCase();
     return products.filter(p => p.title.toLowerCase().includes(query));
   }, [products, debouncedSearch]);
 
-  // Sort filtered products
   const sortedProducts = useMemo(() => {
     if (sortEntries.length === 0) return filteredProducts;
     return [...filteredProducts].sort((a, b) => {
@@ -173,6 +177,7 @@ export default function AdminOperationsPage() {
     setEditingProductId(null);
     setSearchQuery('');
     setSortEntries([]);
+    setShowCreateForm(false);
 
     if (value === 'READ') {
       setReadRefreshKey((k) => k + 1);
@@ -184,11 +189,46 @@ export default function AdminOperationsPage() {
       router.push(`/shop/product/${productId}`);
     } else if (selectedOperation === 'UPDATE') {
       setEditingProductId(productId);
+    } else if (selectedOperation === 'DELETE') {
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        setProductToDelete({ id: product.id, name: product.title });
+        setDeleteModalOpen(true);
+      }
     }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!productToDelete) return;
+
+    try {
+      await deleteProduct(productToDelete.id);
+      alert(`Product "${productToDelete.name}" deleted successfully!`);
+      setDeleteModalOpen(false);
+      setProductToDelete(null);
+      loadProducts();
+    } catch (err) {
+      console.error('Failed to delete product:', err);
+      alert('Failed to delete product. Please try again.');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setProductToDelete(null);
   };
 
   const handleBackFromEdit = () => {
     setEditingProductId(null);
+    loadProducts();
+  };
+
+  const handleBackFromCreate = () => {
+    setShowCreateForm(false);
+  };
+
+  const handleCreateSuccess = () => {
+    setShowCreateForm(false);
     loadProducts();
   };
 
@@ -205,20 +245,20 @@ export default function AdminOperationsPage() {
 
   const formatPrice = (price: number) => `₹${parseFloat(price.toString()).toFixed(2)}`;
 
-  const renderProductsTable = (isUpdateMode: boolean = false) => {
+  const renderProductsTable = (isUpdateMode: boolean = false, isDeleteMode: boolean = false) => {
     return (
       <div className="operation-content-full">
         <div className="products-table-header">
           <div className="products-table-header-left">
             <h2 className="products-table-title">
-              {isUpdateMode ? 'Select Product to Edit' : 'All Products'}
+              {isUpdateMode ? 'Select Product to Edit' : isDeleteMode ? 'Select Product to Delete' : 'All Products'}
             </h2>
             <p className="products-table-count">
               {sortedProducts.length} of {products.length} {products.length === 1 ? 'Product' : 'Products'}
             </p>
           </div>
 
-          {isUpdateMode && (
+          {(isUpdateMode || isDeleteMode) && (
             <div className="search-bar-container">
               <svg className="search-bar-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
@@ -357,6 +397,9 @@ export default function AdminOperationsPage() {
   const renderOperationContent = () => {
     switch (selectedOperation) {
       case 'CREATE':
+        if (showCreateForm) {
+          return <ProductCreateForm onBack={handleBackFromCreate} onSuccess={handleCreateSuccess} />;
+        }
         return (
           <div className="operation-content">
             <div className="operation-icon create-icon">
@@ -366,9 +409,15 @@ export default function AdminOperationsPage() {
                 <line x1="8" y1="12" x2="16" y2="12"></line>
               </svg>
             </div>
-            <h2 className="operation-title">Create Operation</h2>
-            <p className="operation-description">Create new records, products, categories, or users in the system.</p>
-            <div className="operation-placeholder"><p>Create form will be displayed here</p></div>
+            <h2 className="operation-title">Create New Product</h2>
+            <p className="operation-description">Add a new product to your inventory with all necessary details.</p>
+            <button onClick={() => setShowCreateForm(true)} className="create-product-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Create Product
+            </button>
           </div>
         );
 
@@ -383,26 +432,16 @@ export default function AdminOperationsPage() {
 
       case 'DELETE':
         return (
-          <div className="operation-content">
-            <div className="operation-icon delete-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                <line x1="10" y1="11" x2="10" y2="17"></line>
-                <line x1="14" y1="11" x2="14" y2="17"></line>
-              </svg>
-            </div>
-            <h2 className="operation-title">Delete Operation</h2>
-            <p className="operation-description">Remove records, products, or users from the system permanently.</p>
-            <div className="operation-placeholder warning">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                <line x1="12" y1="9" x2="12" y2="13"></line>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-              <p>Delete operations are permanent and cannot be undone</p>
-            </div>
-          </div>
+          <>
+            {renderProductsTable(false, true)}
+            <DeleteConfirmationModal
+              isOpen={deleteModalOpen}
+              productName={productToDelete?.name || ''}
+              productId={productToDelete?.id || 0}
+              onConfirm={handleDeleteConfirm}
+              onCancel={handleDeleteCancel}
+            />
+          </>
         );
 
       default:
@@ -415,7 +454,7 @@ export default function AdminOperationsPage() {
   if (loading) {
     return (
       <>
-        <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/product` }]} />
+        <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/operations` }]} />
         <main className="shop-main">
           <div className="loading-state">Loading...</div>
         </main>
@@ -425,8 +464,7 @@ export default function AdminOperationsPage() {
 
   return (
     <>
-      <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/product` }]} />
-      
+      <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/operations` }]} />
       <main className="shop-main">
         <div className="operations-header">
           <h1 className="operations-page-title">Admin Operations</h1>

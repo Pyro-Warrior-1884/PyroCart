@@ -113,3 +113,89 @@ export async function deleteReview(productId: number, reviewId: number) {
 
   return res.json();
 }
+
+export async function createProduct(dto: {
+  title: string;
+  description: string;
+  price: number;
+  stock: number;
+  categoryId: number;
+  isActive?: boolean;
+}) {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("accessToken")
+      : null;
+
+  const res = await fetcher("/products", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    body: JSON.stringify(dto),
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to create product");
+  }
+
+  return res.json();
+}
+
+export async function updateProduct(
+  id: number,
+  dto: Partial<{
+    title: string;
+    description: string;
+    price: number;
+    stock: number;
+    category: string;
+    isActive: boolean;
+  }>
+) {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("accessToken")
+      : null;
+
+  const res = await fetcher(`/products/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    body: JSON.stringify(dto),
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('Backend error:', res.status, text);
+    throw new Error('Failed to update product');
+  }
+
+  return res.json();
+}
+
+export async function deleteProduct(id: number) {
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("accessToken")
+      : null;
+
+  const res = await fetcher(`/products/${id}`, {
+    method: "DELETE",
+    headers: {
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete product");
+  }
+
+  return res.json();
+}
