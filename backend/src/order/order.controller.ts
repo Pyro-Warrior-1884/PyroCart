@@ -17,6 +17,12 @@ export class OrderController {
     return this.orderService.checkout(userId);
   }
 
+  @Roles(Role.ADMIN)
+  @Get('analytics')
+  getCheckoutAnalytics() {
+    return this.orderService.getCheckoutAnalytics();
+  }
+
   @Throttle({ default: { limit: 10, ttl: 60 } })
   @Get()
   getMyOrders(@User('id') userId: number) {
@@ -27,11 +33,5 @@ export class OrderController {
   @Get(':id')
   getMyOrder(@Param('id') id: string, @User('id') userId: number) {
     return this.orderService.getUserOrderById(+id, userId);
-  }
-
-  @Roles(Role.ADMIN)
-  @Get('analytics')
-  getCheckoutAnalytics() {
-    return this.orderService.getCheckoutAnalytics();
   }
 }
