@@ -8,6 +8,15 @@ interface ProductCreateFormProps {
   onSuccess: () => void;
 }
 
+interface CreateProductFormDto {
+  title: string;
+  description: string;
+  price: number;
+  stock: number;
+  category: string;
+  categoryId: number;
+}
+
 export default function ProductCreateForm({ onBack, onSuccess }: ProductCreateFormProps) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,14 +34,16 @@ export default function ProductCreateForm({ onBack, onSuccess }: ProductCreateFo
     try {
         setSaving(true);
 
-        await createProduct({
-        title: formData.title,
-        description: formData.description,
-        price: Number(formData.price),
-        stock: Number(formData.stock),
-        category: formData.category,
-        imageUrl: formData.imageUrl || '',
-        } as any);
+        const dto: CreateProductFormDto = {
+          title: formData.title,
+          description: formData.description,
+          price: Number(formData.price),
+          stock: Number(formData.stock),
+          category: formData.category,
+          categoryId: 0,
+        };
+
+        await createProduct(dto);
 
         alert('Product created successfully!');
         onSuccess();

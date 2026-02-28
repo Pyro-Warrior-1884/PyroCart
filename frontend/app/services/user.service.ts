@@ -1,5 +1,13 @@
 import { fetcher } from "@/app/lib/fetcher";
 
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+}
+
 export async function getMyProfile() {
   const res = await fetcher("/users/me");
 
@@ -10,7 +18,7 @@ export async function getMyProfile() {
   return res.json();
 }
 
-export async function getAllUsers() {
+export async function getAllUsers(): Promise<User[]> {
   const response = await fetcher(`/admin/users`, {
     method: 'GET',
     headers: {

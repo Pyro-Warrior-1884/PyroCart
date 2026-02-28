@@ -15,6 +15,7 @@ export interface Product {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  ratingAvg: number;
   category: {
     id: number;
     name: string;

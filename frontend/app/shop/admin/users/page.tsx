@@ -35,7 +35,7 @@ export default function AdminUsersPage() {
         setLoading(true);
         const data = await getAllUsers();
         
-        const formattedUsers = data.map((user: any) => ({
+        const formattedUsers = data.map((user) => ({
           id: user.id,
           name: user.name || 'N/A',
           email: user.email,

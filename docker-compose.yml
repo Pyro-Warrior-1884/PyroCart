@@ -60,17 +60,17 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  seed:
-    build: ./backend
-    container_name: ecommerce_seed
-    command: sh -c "npx prisma generate && npx prisma db seed"
+  frontend:
+    build:
+      context: ./frontend
+    container_name: ecommerce_frontend
+    ports:
+      - "4000:3000"
     env_file:
       - .env.docker
     depends_on:
-      postgres:
-        condition: service_healthy
-      opensearch:
-        condition: service_started
+      - backend
+    restart: unless-stopped
 
 volumes:
   postgres_data:

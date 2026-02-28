@@ -18,7 +18,7 @@ export interface Cart {
   items: CartItem[];
 }
 
-export async function getCart() {
+export async function getCart(): Promise<Cart> {
   const res = await fetcher("/cart");
 
   if (!res.ok) {

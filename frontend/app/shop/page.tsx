@@ -7,18 +7,32 @@ import { getAllProducts } from "@/app/services/product.service";
 import { useRouter } from "next/navigation";
 import Breadcrumb from '../components/layout/BreadCrumb';
 
+interface ShopProduct {
+  id: string;
+  name: string;
+  price: number;
+  rating: number;
+  image: string;
+}
+
+interface ShopCategory {
+  id: string;
+  name: string;
+  products: ShopProduct[];
+}
+
 export default function ShopPage() {
 
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<ShopCategory[]>([]);
   const router = useRouter();
 
   useEffect(() => {
     async function loadProducts() {
       try {
         const products = await getAllProducts();
-        const grouped: Record<string, any[]> = {};
+        const grouped: Record<string, ShopProduct[]> = {};
 
-        products.forEach((p: any) => {
+        products.forEach((p) => {
           const categoryName = p.category.name;
 
           if (!grouped[categoryName]) {
@@ -30,11 +44,11 @@ export default function ShopPage() {
             name: p.title,
             price: Number(p.price),
             rating: p.ratingAvg ?? 0,
-            image: p.images?.[0]?.url ?? ""
+            image: p.images?.[0]?.url ?? "",
           });
         });
 
-        const formatted = Object.keys(grouped).map((key) => ({
+        const formatted: ShopCategory[] = Object.keys(grouped).map((key) => ({
           id: key.toLowerCase(),
           name: key,
           products: grouped[key],

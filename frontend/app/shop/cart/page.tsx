@@ -32,7 +32,7 @@ export default function CartPage() {
       setLoading(true);
       const data = await getCart();
 
-      const formattedItems = data.items?.map((item: any) => ({
+      const formattedItems = data.items?.map((item) => ({
         id: item.id,
         productId: item.productId,
         productName: item.product?.title || 'Product',

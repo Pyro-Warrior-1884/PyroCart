@@ -1,5 +1,33 @@
 import { fetcher } from "@/app/lib/fetcher";
 
+export interface OrderProduct {
+  id: number;
+  title: string;
+  images: { url: string }[];
+}
+
+export interface OrderItem {
+  productId: number;
+  price: number;
+  quantity: number;
+  product?: OrderProduct;
+}
+
+export interface Order {
+  id: number;
+  total: number;
+  status: string;
+  createdAt: string;
+  items: OrderItem[];
+}
+
+export interface CheckoutAnalytics {
+  attempts: number;
+  success: number;
+  failed: number;
+  cancelled: number;
+}
+
 async function safeRequest(endpoint: string, options: RequestInit = {}) {
   const res = await fetcher(endpoint, options);
 
@@ -39,7 +67,7 @@ export async function checkoutOrder() {
   return res.json();
 }
 
-export async function getMyOrders() {
+export async function getMyOrders(): Promise<Order[]> {
   const res = await safeRequest("/orders");
 
   if (!res.ok) throw new Error("Failed to load orders");
@@ -47,7 +75,7 @@ export async function getMyOrders() {
   return res.json();
 }
 
-export async function getOrderById(id: number) {
+export async function getOrderById(id: number): Promise<Order> {
   const res = await safeRequest(`/orders/${id}`);
 
   if (!res.ok) throw new Error("Failed to load order");
@@ -55,7 +83,7 @@ export async function getOrderById(id: number) {
   return res.json();
 }
 
-export async function getOrderAnalytics() {
+export async function getOrderAnalytics():Promise<CheckoutAnalytics> {
   const res = await safeRequest("/orders/analytics");
 
   if (!res.ok) throw new Error("Failed to load analytics");

@@ -4,15 +4,23 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import ProductCard from '@/app/components/product/ProductCard';
 import Breadcrumb from '@/app/components/layout/BreadCrumb';
-import { getAllProducts } from '@/app/services/product.service';
+import { getAllProducts, Product } from '@/app/services/product.service';
 import '@/app/shop/shop.css';
+
+interface CategoryProduct {
+  id: string;
+  name: string;
+  price: number;
+  rating: number;
+  image: string;
+}
 
 export default function CategoryPage() {
   const params = useParams();
   const categorySlug = params.slug as string;
 
   const [categoryName, setCategoryName] = useState('');
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<CategoryProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +31,7 @@ export default function CategoryPage() {
 
         const normalizedSlug = categorySlug.toLowerCase().replace(/-/g, ' ');
 
-        const categoryProducts = allProducts.filter((p: any) => {
+        const categoryProducts = allProducts.filter((p) => {
           const categoryNameNormalized = p.category.name.toLowerCase().replace(/-/g, ' ');
           return categoryNameNormalized === normalizedSlug;
         });
@@ -31,7 +39,7 @@ export default function CategoryPage() {
         if (categoryProducts.length > 0) {
           setCategoryName(categoryProducts[0].category.name);
           
-          const formattedProducts = categoryProducts.map((p: any) => ({
+          const formattedProducts = categoryProducts.map((p) => ({
             id: String(p.id),
             name: p.title,
             price: Number(p.price),

@@ -25,7 +25,7 @@ export default function OrdersPage() {
         setLoading(true);
         const data = await getMyOrders();
         
-        const formattedOrders = data.map((order: any) => ({
+        const formattedOrders = data.map((order) => ({
           id: order.id,
           total: Number(order.total),
           status: order.status,

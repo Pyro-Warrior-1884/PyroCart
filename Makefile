@@ -1,23 +1,21 @@
 down:
 	docker compose down -v
 
+build:
+	docker compose --env-file .env.docker build --no-cache
+
 up:
-	docker compose build --no-cache
+	docker compose --env-file .env.docker up -d
 
-pro:
-	docker compose --env-file .env.docker up -d postgres redis opensearch
+run:
+	docker compose --env-file .env.docker up -d --build
 
-open:
-	curl -X PUT http://localhost:9200/products -H "Content-Type: application/json" -d "{\"settings\":{\"analysis\":{\"analyzer\":{\"product_analyzer\":{\"type\":\"custom\",\"tokenizer\":\"standard\",\"filter\":[\"lowercase\",\"stop\"]}}}},\"mappings\":{\"properties\":{\"id\":{\"type\":\"integer\"},\"name\":{\"type\":\"text\",\"analyzer\":\"product_analyzer\",\"fields\":{\"keyword\":{\"type\":\"keyword\"}}},\"description\":{\"type\":\"text\",\"analyzer\":\"product_analyzer\"},\"price\":{\"type\":\"float\"},\"category\":{\"type\":\"keyword\"},\"createdAt\":{\"type\":\"date\"}}}}"
+logs:
+	docker compose logs -f
 
-back:
-	docker compose --env-file .env.docker up -d backend
+restart:
+	docker compose down
+	docker compose --env-file .env.docker up -d --build
 
-seed:
-	docker compose --env-file .env.docker up seed
-
-front:
-	cd frontend && npm run dev
-
-setup: down up pro
-deploy: open back seed front
+clean:
+	docker system prune -af

@@ -18,6 +18,7 @@ import { UserModule } from './user/user.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { RedisModule } from './redis/redis.module';
 import { OpensearchModule } from './opensearch/opensearch.module';
+import { OpensearchService } from './opensearch/opensearch.service';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { OpensearchModule } from './opensearch/opensearch.module';
   ],
   controllers: [AppController],
   providers: [
+    OpensearchService,
     AppService,
     {
       provide: APP_GUARD,

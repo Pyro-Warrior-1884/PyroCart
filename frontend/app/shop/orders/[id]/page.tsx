@@ -47,7 +47,7 @@ export default function OrderDetailPage() {
           total: Number(data.total),
           status: data.status,
           createdAt: data.createdAt,
-          items: data.items.map((item: any) => ({
+          items: data.items.map((item) => ({
             productId: item.productId,
             productName: item.product?.title || 'Product',
             price: Number(item.price),
