@@ -1,21 +1,15 @@
 #!/bin/sh
 set -e
 
-echo "Generating Prisma client..."
+echo "Generating Prisma Client"
 npx prisma generate
 
-echo "Running migrations..."
+echo "Running Migrations"
 npx prisma migrate deploy
 
-echo "Checking seed state..."
-COUNT=$(node dist/check-seed.js)
+echo "Seeding Process"
 
-if [ "$COUNT" -eq "0" ]; then
-  echo "Seeding database..."
-  npx prisma db seed
-else
-  echo "Seed not required."
-fi
+npx prisma db seed
 
-echo "Starting server..."
+echo "Starting Server"
 node dist/main.js

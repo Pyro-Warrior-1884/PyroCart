@@ -28,31 +28,21 @@ async function seed() {
     'https://fakestoreapi.com/products',
   );
 
-  let indexed = 0;
+  const existing = await prisma.product.findMany({
+    select: { externalId: true },
+  });
+
+  const existingIds = new Set(existing.map((p) => p.externalId));
+
+  let created = 0;
 
   for (const product of products) {
-    const dbProduct = await prisma.product.upsert({
-      where: { externalId: product.id },
-      update: {
-        title: product.title,
-        description: product.description,
-        price: new Prisma.Decimal(product.price),
-        ratingAvg: product.rating.rate,
-        ratingCount: product.rating.count,
-        isActive: true,
-        stock: 10,
-        category: {
-          connectOrCreate: {
-            where: { name: product.category },
-            create: { name: product.category },
-          },
-        },
-        images: {
-          deleteMany: {},
-          create: [{ url: product.image }],
-        },
-      },
-      create: {
+    if (existingIds.has(product.id)) {
+      continue;
+    }
+
+    const dbProduct = await prisma.product.create({
+      data: {
         externalId: product.id,
         title: product.title,
         description: product.description,
@@ -90,11 +80,11 @@ async function seed() {
       },
     });
 
-    indexed++;
-    console.log(`[SEED] Indexed product ${indexed}/${products.length}`);
+    created++;
+    console.log(`[SEED] Created ${created}`);
   }
 
-  console.log(`[SEED] Completed. Indexed ${indexed} products`);
+  console.log(`[SEED] Completed. Added ${created} new products`);
 }
 
 seed()
