@@ -8,9 +8,12 @@ import { getAllProducts, Product, deleteProduct } from '@/app/services/product.s
 import ProductEditForm from '@/app/components/admin/ProductEditForm';
 import ProductCreateForm from '@/app/components/admin/ProductCreateForm';
 import DeleteConfirmationModal from '@/app/components/admin/DeleteConfirmationModal';
+import Toast, { ToastType } from '@/app/components/layout/Toast';
 import '../../shop.css';
 import '../../create.css';
 import '../../dropdown.css';
+import '../../delete.css';
+import '../../toast.css';
 
 type Operation = 'READ' | 'CREATE' | 'UPDATE' | 'DELETE';
 type SortField = 'title' | 'price' | 'stock' | 'createdAt' | 'updatedAt';
@@ -19,6 +22,12 @@ type SortDirection = 'asc' | 'desc';
 interface SortEntry {
   field: SortField;
   direction: SortDirection;
+}
+
+interface ToastState {
+  show: boolean;
+  message: string;
+  type: ToastType;
 }
 
 const FIELD_LABELS: Record<SortField, string> = {
@@ -79,6 +88,15 @@ export default function AdminOperationsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: number; name: string } | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
+
+  const showToast = (message: string, type: ToastType) => {
+    setToast({ show: true, message, type });
+  };
+
+  const closeToast = () => {
+    setToast({ ...toast, show: false });
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -120,6 +138,7 @@ export default function AdminOperationsPage() {
       setProducts(data);
     } catch (err) {
       console.error('Failed to load products:', err);
+      showToast('Failed to load products', 'error');
     } finally {
       setProductsLoading(false);
     }
@@ -203,13 +222,13 @@ export default function AdminOperationsPage() {
 
     try {
       await deleteProduct(productToDelete.id);
-      alert(`Product "${productToDelete.name}" deleted successfully!`);
+      showToast(`Product "${productToDelete.name}" deleted successfully!`, 'success');
       setDeleteModalOpen(false);
       setProductToDelete(null);
       loadProducts();
     } catch (err) {
       console.error('Failed to delete product:', err);
-      alert('Failed to delete product. Please try again.');
+      showToast('Failed to delete product. Please try again.', 'error');
     }
   };
 
@@ -218,8 +237,11 @@ export default function AdminOperationsPage() {
     setProductToDelete(null);
   };
 
-  const handleBackFromEdit = () => {
+  const handleBackFromEdit = (success?: boolean, message?: string) => {
     setEditingProductId(null);
+    if (success && message) {
+      showToast(message, 'success');
+    }
     loadProducts();
   };
 
@@ -227,8 +249,11 @@ export default function AdminOperationsPage() {
     setShowCreateForm(false);
   };
 
-  const handleCreateSuccess = () => {
+  const handleCreateSuccess = (message?: string) => {
     setShowCreateForm(false);
+    if (message) {
+      showToast(message, 'success');
+    }
     loadProducts();
   };
 
@@ -398,7 +423,7 @@ export default function AdminOperationsPage() {
     switch (selectedOperation) {
       case 'CREATE':
         if (showCreateForm) {
-          return <ProductCreateForm onBack={handleBackFromCreate} onSuccess={handleCreateSuccess} />;
+          return <ProductCreateForm onBack={handleBackFromCreate} onSuccess={handleCreateSuccess} showToast={showToast} />;
         }
         return (
           <div className="operation-content">
@@ -426,7 +451,7 @@ export default function AdminOperationsPage() {
 
       case 'UPDATE':
         if (editingProductId) {
-          return <ProductEditForm productId={editingProductId} onBack={handleBackFromEdit} />;
+          return <ProductEditForm productId={editingProductId} onBack={handleBackFromEdit} showToast={showToast} />;
         }
         return renderProductsTable(true);
 
@@ -464,6 +489,12 @@ export default function AdminOperationsPage() {
 
   return (
     <>
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.show}
+        onClose={closeToast}
+      />
       <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/operations` }]} />
       <main className="shop-main">
         <div className="operations-header">

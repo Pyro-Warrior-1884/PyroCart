@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { createProduct } from '@/app/services/product.service';
+import { ToastType } from '@/app/components/layout/Toast';
 
 interface ProductCreateFormProps {
   onBack: () => void;
-  onSuccess: () => void;
+  onSuccess: (message?: string) => void;
+  showToast: (message: string, type: ToastType) => void;
 }
 
 interface CreateProductFormDto {
@@ -17,7 +19,7 @@ interface CreateProductFormDto {
   categoryId: number;
 }
 
-export default function ProductCreateForm({ onBack, onSuccess }: ProductCreateFormProps) {
+export default function ProductCreateForm({ onBack, onSuccess, showToast }: ProductCreateFormProps) {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -28,32 +30,32 @@ export default function ProductCreateForm({ onBack, onSuccess }: ProductCreateFo
     imageUrl: '',
   });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-        setSaving(true);
+      setSaving(true);
 
-        const dto: CreateProductFormDto = {
-          title: formData.title,
-          description: formData.description,
-          price: Number(formData.price),
-          stock: Number(formData.stock),
-          category: formData.category,
-          categoryId: 0,
-        };
+      const dto: CreateProductFormDto = {
+        title: formData.title,
+        description: formData.description,
+        price: Number(formData.price),
+        stock: Number(formData.stock),
+        category: formData.category,
+        categoryId: 0,
+      };
 
-        await createProduct(dto);
+      await createProduct(dto);
 
-        alert('Product created successfully!');
-        onSuccess();
+      showToast(`Product "${formData.title}" created successfully!`, 'success');
+      onSuccess(`Product created successfully!`);
     } catch (err) {
-        console.error('Failed to create product:', err);
-        alert('Failed to create product. Please try again.');
+      console.error('Failed to create product:', err);
+      showToast('Failed to create product. Please try again.', 'error');
     } finally {
-        setSaving(false);
+      setSaving(false);
     }
-    };
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -69,6 +71,7 @@ export default function ProductCreateForm({ onBack, onSuccess }: ProductCreateFo
       category: '',
       imageUrl: '',
     });
+    showToast('Form reset successfully', 'info');
   };
 
   return (

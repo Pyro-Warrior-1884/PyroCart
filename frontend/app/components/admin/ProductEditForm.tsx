@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateProduct } from '@/app/services/product.service';
+import { ToastType } from '@/app/components/layout/Toast';
 
 interface ProductEditFormProps {
   productId: number;
-  onBack: () => void;
+  onBack: (success?: boolean, message?: string) => void;
+  showToast: (message: string, type: ToastType) => void;
 }
 
-export default function ProductEditForm({ productId, onBack }: ProductEditFormProps) {
+export default function ProductEditForm({ productId, onBack, showToast }: ProductEditFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,6 +51,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
       });
     } catch (err) {
       console.error('Failed to load product:', err);
+      showToast('Failed to load product details', 'error');
     } finally {
       setLoading(false);
     }
@@ -68,11 +71,11 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
         category: formData.category,
       });
 
-      alert('Product updated successfully!');
-      onBack();
+      showToast(`Product "${formData.title}" updated successfully!`, 'success');
+      onBack(true, `Product updated successfully!`);
     } catch (err) {
       console.error('Failed to update product:', err);
-      alert('Failed to update product. Please try again.');
+      showToast('Failed to update product. Please try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -95,7 +98,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
   return (
     <div className="edit-form-container">
       <div className="edit-form-header">
-        <button onClick={onBack} className="back-button">
+        <button onClick={() => onBack()} className="back-button">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
@@ -189,7 +192,7 @@ export default function ProductEditForm({ productId, onBack }: ProductEditFormPr
         </div>
 
         <div className="form-actions">
-          <button type="button" onClick={onBack} className="btn-cancel">
+          <button type="button" onClick={() => onBack()} className="btn-cancel">
             Cancel
           </button>
           <button type="submit" disabled={saving} className="btn-submit">
