@@ -120,7 +120,6 @@ export async function createProduct(dto: {
   description: string;
   price: number;
   stock: number;
-  categoryId: number;
   isActive?: boolean;
 }) {
   const token =

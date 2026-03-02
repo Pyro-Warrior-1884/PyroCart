@@ -479,7 +479,7 @@ export default function AdminOperationsPage() {
   if (loading) {
     return (
       <>
-        <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/operations` }]} />
+        <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/product` }]} />
         <main className="shop-main">
           <div className="loading-state">Loading...</div>
         </main>
@@ -495,7 +495,7 @@ export default function AdminOperationsPage() {
         isVisible={toast.show}
         onClose={closeToast}
       />
-      <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/operations` }]} />
+      <Breadcrumb items={[{ label: 'Main', href: '/shop' }, { label: 'CRUD', href: `/shop/admin/product` }]} />
       <main className="shop-main">
         <div className="operations-header">
           <h1 className="operations-page-title">Admin Operations</h1>

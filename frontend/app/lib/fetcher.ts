@@ -7,8 +7,6 @@ export async function fetcher(
       ? localStorage.getItem("accessToken")
       : null;
 
-  console.log(process.env.NEXT_PUBLIC_API_URL)
-
   const backend = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(
     `${backend}${endpoint}`,

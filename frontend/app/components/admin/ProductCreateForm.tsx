@@ -16,7 +16,6 @@ interface CreateProductFormDto {
   price: number;
   stock: number;
   category: string;
-  categoryId: number;
 }
 
 export default function ProductCreateForm({ onBack, onSuccess, showToast }: ProductCreateFormProps) {
@@ -42,12 +41,11 @@ export default function ProductCreateForm({ onBack, onSuccess, showToast }: Prod
         price: Number(formData.price),
         stock: Number(formData.stock),
         category: formData.category,
-        categoryId: 0,
       };
 
-      await createProduct(dto);
+      const res = await createProduct(dto);
 
-      showToast(`Product "${formData.title}" created successfully!`, 'success');
+      showToast(`Product "${res.title}" created successfully!`, 'success');
       onSuccess(`Product created successfully!`);
     } catch (err) {
       console.error('Failed to create product:', err);
