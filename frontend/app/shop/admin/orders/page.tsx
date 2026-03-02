@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import Breadcrumb from '@/app/components/layout/BreadCrumb';
 import Toast, { ToastType } from '@/app/components/layout/Toast';
 import { getMyProfile } from '@/app/services/user.service';
-import { getAllOrders, UserWithOrders } from '@/app/services/order.service';
+import { getAllOrders, UserWithOrders, updateOrderStatus } from '@/app/services/order.service';
 import '../../shop.css';
 import '../../dropdown.css';
 import '../../toast.css';
+import '../../status.css';
 
 type SortField = 'email' | 'orderCount' | 'totalSpent' | 'latestOrder';
 type SortDirection = 'asc' | 'desc';
@@ -46,6 +47,22 @@ const STATUS_COLORS: Record<string, string> = {
   SHIPPED:   'status-shipped',
   DELIVERED: 'status-delivered',
   CANCELLED: 'status-cancelled',
+};
+
+const ORDER_STATUS_FLOW: Record<string, string | null> = {
+  PENDING: 'PAID',
+  PAID: 'SHIPPED',
+  SHIPPED: 'DELIVERED',
+  DELIVERED: null, 
+  CANCELLED: null, 
+};
+
+const STATUS_ACTION_LABELS: Record<string, string> = {
+  PENDING: 'Mark as Paid',
+  PAID: 'Mark as Shipped',
+  SHIPPED: 'Mark as Delivered',
+  DELIVERED: 'Completed ✓',
+  CANCELLED: 'Cancelled',
 };
 
 function SortIcon({ priority, direction }: { priority: number | null; direction: SortDirection | null }) {
@@ -107,6 +124,7 @@ export default function AdminAllOrdersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [expandedUserId, setExpandedUserId] = useState<number | null>(null);
   const [toast, setToast]               = useState<ToastState>({ show: false, message: '', type: 'info' });
+  const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null);
 
   const showToast = (message: string, type: ToastType) =>
     setToast({ show: true, message, type });
@@ -150,6 +168,32 @@ export default function AdminAllOrdersPage() {
   useEffect(() => {
     if (isAdmin) loadOrders();
   }, [isAdmin, loadOrders]);
+
+  const handleStatusUpdate = async (orderId: number, currentStatus: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const nextStatus = ORDER_STATUS_FLOW[currentStatus];
+    
+    if (!nextStatus) {
+      showToast(`Order #${orderId} is already in terminal state: ${currentStatus}`, 'info');
+      return;
+    }
+
+    try {
+      setUpdatingOrderId(orderId);
+      
+      await updateOrderStatus(orderId, nextStatus);
+      
+      showToast(`Order #${orderId} updated: ${currentStatus} → ${nextStatus}`, 'success');
+      
+      await loadOrders();
+    } catch (err) {
+      console.error('Failed to update order status:', err);
+      showToast(`Failed to update order #${orderId} status`, 'error');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
 
   const handleSort = (field: SortField) => {
     setSortEntries((prev) => {
@@ -401,41 +445,76 @@ export default function AdminAllOrdersPage() {
                                   <th className="col-center" style={{ width: '120px' }}>Total</th>
                                   <th className="col-center" style={{ width: '160px' }}>Date</th>
                                   <th className="col-left">Items</th>
+                                  <th className="col-center" style={{ width: '150px' }}>Update Status</th>
                                 </tr>
                               </thead>
                               <tbody>
-                                {user.raw.orders.map((order) => (
-                                  <tr
-                                    key={order.id}
-                                    className="product-row"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      router.push(`/shop/admin/orders/${order.id}`);
-                                    }}
-                                  >
-                                    <td className="product-id col-center">#{order.id}</td>
-                                    <td className="col-center">
-                                      <span className={`stock-badge ${STATUS_COLORS[order.status] ?? 'in-stock'}`}>
-                                        {order.status}
-                                      </span>
-                                    </td>
-                                    <td className="col-center">
-                                      <span className="product-price-badge">{formatPrice(Number(order.total))}</span>
-                                    </td>
-                                    <td className="product-date col-center">{formatDate(order.createdAt)}</td>
-                                    <td className="product-name-cell col-left">
-                                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                        {order.items.map((item, i) => (
-                                          <span key={i} style={{ fontSize: '12px', opacity: 0.8 }}>
-                                            {item.product?.title ?? `Product #${item.productId}`}
-                                            {' '}×{item.quantity}
-                                            {i < order.items.length - 1 ? ',' : ''}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
+                                {user.raw.orders.map((order) => {
+                                  const nextStatus = ORDER_STATUS_FLOW[order.status];
+                                  const isTerminal = !nextStatus;
+                                  const isUpdating = updatingOrderId === order.id;
+
+                                  return (
+                                    <tr key={order.id} className="product-row">
+                                      <td 
+                                        className="product-id col-center"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          router.push(`/shop/admin/orders/${order.id}`);
+                                        }}
+                                      >
+                                        #{order.id}
+                                      </td>
+                                      <td className="col-center">
+                                        <span className={`stock-badge ${STATUS_COLORS[order.status] ?? 'in-stock'}`}>
+                                          {order.status}
+                                        </span>
+                                      </td>
+                                      <td className="col-center">
+                                        <span className="product-price-badge">{formatPrice(Number(order.total))}</span>
+                                      </td>
+                                      <td className="product-date col-center">{formatDate(order.createdAt)}</td>
+                                      <td className="product-name-cell col-left">
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                          {order.items.map((item, i) => (
+                                            <span key={i} style={{ fontSize: '12px', opacity: 'revert-layer' }}>
+                                              {item.product?.title ?? `Product #${item.productId}`}
+                                              {' '}×{item.quantity}
+                                              {i < order.items.length - 1 ? ',' : ''}
+                                            </span>
+                                          ))}
+                                        </div>
+                                      </td>
+                                      <td className="col-center">
+                                        <button
+                                          onClick={(e) => handleStatusUpdate(order.id, order.status, e)}
+                                          disabled={isTerminal || isUpdating}
+                                          className={`status-update-btn ${isTerminal ? 'terminal' : ''}`}
+                                          title={isTerminal ? 'Cannot update terminal status' : `Update to ${nextStatus}`}
+                                        >
+                                          {isUpdating ? (
+                                            <>
+                                              <div className="btn-spinner"></div>
+                                              Updating
+                                            </>
+                                          ) : (
+                                            <>
+                                              {isTerminal ? (
+                                                <>
+                                                  {order.status === 'DELIVERED' ? '✓' : '✕'} {STATUS_ACTION_LABELS[order.status]}
+                                                </>
+                                              ) : (
+                                                <>
+                                                  →  {STATUS_ACTION_LABELS[order.status]}
+                                                </>
+                                              )}
+                                            </>
+                                          )}
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
                               </tbody>
                             </table>
                           </td>
