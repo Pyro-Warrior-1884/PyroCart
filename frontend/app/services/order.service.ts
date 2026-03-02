@@ -21,6 +21,12 @@ export interface Order {
   items: OrderItem[];
 }
 
+export interface UserWithOrders {
+  id: number;
+  email: string;
+  orders: Order[];
+}
+
 export interface CheckoutAnalytics {
   attempts: number;
   success: number;
@@ -63,7 +69,6 @@ export async function checkoutOrder() {
   });
 
   if (!res.ok) throw new Error("Checkout failed");
-
   return res.json();
 }
 
@@ -71,7 +76,6 @@ export async function getMyOrders(): Promise<Order[]> {
   const res = await safeRequest("/orders");
 
   if (!res.ok) throw new Error("Failed to load orders");
-
   return res.json();
 }
 
@@ -79,14 +83,40 @@ export async function getOrderById(id: number): Promise<Order> {
   const res = await safeRequest(`/orders/${id}`);
 
   if (!res.ok) throw new Error("Failed to load order");
-
   return res.json();
 }
 
-export async function getOrderAnalytics():Promise<CheckoutAnalytics> {
-  const res = await safeRequest("/orders/analytics");
+export async function getAllOrders(): Promise<UserWithOrders[]> {
+  const res = await safeRequest("/orders/admin/all");
+
+  if (!res.ok) throw new Error("Failed to load all orders");
+  return res.json();
+}
+
+export async function getAdminOrderById(id: number): Promise<Order> {
+  const res = await safeRequest(`/orders/admin/${id}`);
+
+  if (!res.ok) throw new Error("Failed to load order");
+  return res.json();
+}
+
+export async function updateOrderStatus(
+  id: number,
+  status: string
+): Promise<Order> {
+  const res = await safeRequest(`/orders/admin/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!res.ok) throw new Error("Failed to update status");
+  return res.json();
+}
+
+export async function getOrderAnalytics(): Promise<CheckoutAnalytics> {
+  const res = await safeRequest("/orders/admin/analytics");
 
   if (!res.ok) throw new Error("Failed to load analytics");
-
   return res.json();
 }
