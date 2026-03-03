@@ -61,7 +61,7 @@ const STATUS_ACTION_LABELS: Record<string, string> = {
   PENDING: 'Mark as Paid',
   PAID: 'Mark as Shipped',
   SHIPPED: 'Mark as Delivered',
-  DELIVERED: 'Completed ✓',
+  DELIVERED: 'Completed',
   CANCELLED: 'Cancelled',
 };
 

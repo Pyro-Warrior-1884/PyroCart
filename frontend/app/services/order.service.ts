@@ -115,7 +115,7 @@ export async function updateOrderStatus(
 }
 
 export async function getOrderAnalytics(): Promise<CheckoutAnalytics> {
-  const res = await safeRequest("/orders/admin/analytics");
+  const res = await safeRequest("/orders/analytics");
 
   if (!res.ok) throw new Error("Failed to load analytics");
   return res.json();

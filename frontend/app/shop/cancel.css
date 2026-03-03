@@ -1,0 +1,323 @@
+/* ============================================
+   CANCEL ORDER BUTTON & MODAL STYLES
+   ============================================ */
+
+/* Cancel Order Button */
+.cancel-order-btn {
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.cancel-order-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.cancel-order-btn:active {
+  transform: translateY(0);
+}
+
+.cancel-order-btn svg {
+  transition: transform 0.3s;
+}
+
+.cancel-order-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* Cancel Info Message */
+.cancel-info {
+  width: 80%;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #fbbf24;
+  border-radius: 10px;
+  color: #92400e;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.cancel-info svg {
+  flex-shrink: 0;
+  color: #f59e0b;
+}
+
+/* Cancel Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Cancel Modal Content */
+.cancel-modal-content {
+  background: white;
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cancel Modal Header */
+.cancel-modal-header {
+  position: relative;
+  padding: 2rem 2rem 1rem;
+  text-align: center;
+}
+
+.cancel-icon-large {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-radius: 50%;
+  animation: iconPulse 2s infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.cancel-icon-large svg {
+  color: #ef4444;
+  stroke-width: 2.5;
+}
+
+.cancel-modal-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close:hover:not(:disabled) {
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.1);
+}
+
+.modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cancel Modal Body */
+.cancel-modal-body {
+  padding: 0 2rem 1.5rem;
+  text-align: center;
+}
+
+.cancel-modal-warning {
+  font-size: 1rem;
+  color: #374151;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+
+.cancel-order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.cancel-order-id {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cancel-order-total {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #111827;
+  font-family: 'Poppins', sans-serif;
+}
+
+.cancel-modal-note {
+  font-size: 0.875rem;
+  color: #ef4444;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+/* Cancel Modal Footer */
+.cancel-modal-footer {
+  padding: 1.5rem 2rem 2rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.cancel-modal-btn-back {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-modal-btn-back:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+}
+
+.cancel-modal-btn-back:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancel-modal-btn-confirm {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.cancel-modal-btn-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.cancel-modal-btn-confirm:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.cancel-modal-btn-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .cancel-modal-content {
+    margin: 0 1rem;
+  }
+
+  .cancel-modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+
+  .cancel-modal-body {
+    padding: 0 1.5rem 1rem;
+  }
+
+  .cancel-modal-footer {
+    padding: 1rem 1.5rem 1.5rem;
+    flex-direction: column;
+  }
+
+  .cancel-icon-large {
+    width: 64px;
+    height: 64px;
+  }
+
+  .cancel-modal-title {
+    font-size: 1.5rem;
+  }
+
+  .cancel-order-total {
+    font-size: 1.25rem;
+  }
+}
