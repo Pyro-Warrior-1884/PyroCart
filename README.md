@@ -4,7 +4,10 @@ A modern **full-stack e-commerce platform** built with a modular backend
 and a responsive web frontend.\
 PyroCart demonstrates how scalable online store systems are designed
 using modern development tools, clean architecture, and secure
-authentication.
+authentication.\
+This project was created to try to mimic atleast a fraction of what a real world e-commerce website
+would be in the modern age.\
+It was a great expirence to work on this project and build it from scratch.\
 
 ------------------------------------------------------------------------
 
@@ -50,7 +53,7 @@ Infrastructure Components:
 -   Next.js
 -   React
 -   TypeScript
--   Tailwind CSS
+-   Vanilla CSS
 
 ### Backend
 
@@ -97,7 +100,7 @@ administrative actions.
 
 ## Project Structure
 
-'''
+```
 PyroCart 
 ├── frontend\
 │ ├── app\
@@ -118,7 +121,7 @@ PyroCart
 │ │ └── prisma
 
 └── docker-compose.yml
-'''
+```
 
 ------------------------------------------------------------------------
 
@@ -142,35 +145,19 @@ cd PyroCart
 ```
 ------------------------------------------------------------------------
 
-### 2. Start Infrastructure
+### 2. Start Project
 
-docker-compose up
+```
+make run
+```
 
 This launches:
 
+-   Frontend
+-   Backend
 -   PostgreSQL
 -   Redis
 -   OpenSearch
-
-------------------------------------------------------------------------
-
-### 3. Start Backend
-
-cd backend\
-npm install\
-npm run start
-
-The backend API server will start.
-
-------------------------------------------------------------------------
-
-### 4. Start Frontend
-
-cd frontend
-npm install
-npm run dev
-
-The application will be available in your browser.
 
 ------------------------------------------------------------------------
 
