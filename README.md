@@ -146,6 +146,7 @@ cd PyroCart
 ------------------------------------------------------------------------
 
 ### 2. Start Project
+Note: Docker Desktop is mandatory to run this project
 
 ```
 make run
