@@ -7,7 +7,7 @@ using modern development tools, clean architecture, and secure
 authentication.\
 This project was created to try to mimic atleast a fraction of what a real world e-commerce website
 would be in the modern age.\
-It was a great expirence to work on this project and build it from scratch.\
+It was a great expirence to work on this project and build it from scratch.
 
 ------------------------------------------------------------------------
 
