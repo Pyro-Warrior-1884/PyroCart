@@ -97,7 +97,9 @@ administrative actions.
 
 ## Project Structure
 
-PyroCart ├── frontend\
+'''
+PyroCart 
+├── frontend\
 │ ├── app\
 │ │ ├── components\
 │ │ ├── services\
@@ -116,6 +118,7 @@ PyroCart ├── frontend\
 │ │ └── prisma
 
 └── docker-compose.yml
+'''
 
 ------------------------------------------------------------------------
 
@@ -133,8 +136,10 @@ Install the following:
 
 ### 1. Clone the Repository
 
-git clone https://github.com/Pyro-Warrior-1884/PyroCart cd PyroCart
-
+```
+git clone https://github.com/Pyro-Warrior-1884/PyroCart 
+cd PyroCart
+```
 ------------------------------------------------------------------------
 
 ### 2. Start Infrastructure
@@ -161,8 +166,8 @@ The backend API server will start.
 
 ### 4. Start Frontend
 
-cd frontend\
-npm install\
+cd frontend
+npm install
 npm run dev
 
 The application will be available in your browser.
