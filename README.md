@@ -164,6 +164,7 @@ This launches:
 
 ### Shortcuts
 To make the process of typing the commands much easier.
+Add the make prefix to the keyword to forward to the given command.
 
 ```
 down:
