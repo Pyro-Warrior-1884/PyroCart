@@ -162,6 +162,28 @@ This launches:
 
 ------------------------------------------------------------------------
 
+### Shortcuts
+To make the process of typing the commands much easier.
+
+```
+down:
+	docker compose down -v
+```
+Bring all the containers & volumes down.
+
+```
+logs:
+	docker compose logs -f
+```
+Show the logs of docker.
+
+```
+run:
+	docker compose down
+	docker compose --env-file .env.docker up -d --build
+```
+Bring all the containers & volumes down and build and Compose up the project.
+
 ## Authentication
 
 PyroCart uses **JWT authentication**.
