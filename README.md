@@ -145,6 +145,50 @@ cd PyroCart
 ```
 ------------------------------------------------------------------------
 
+## Environment Configuration
+
+Before running the project, create an environment file.
+
+Create a file named:
+
+```
+.env.docker
+```
+
+Then copy and paste the following configuration into the file:
+
+```
+PORT=3000
+
+POSTGRES_PORT=5432
+POSTGRES_USER=ecommerce
+POSTGRES_PASSWORD=ecommerce
+POSTGRES_DB=ecommerce
+
+DATABASE_URL=postgresql://ecommerce:ecommerce@postgres:5432/ecommerce
+
+OPENSEARCH_NODE=http://opensearch:9200
+
+REDIS_HOST=redis
+REDIS_PORT=6379
+
+JWT_SECRET=040b0fdbd127bf481596e724927289f8d080aa133c21bae23987b6aa89269437
+JWT_EXPIRES_IN=7d
+JWT_ACCESS_EXPIRES_IN=900
+JWT_REFRESH_EXPIRES_SECONDS=604800
+
+NEXT_PUBLIC_API_URL=http://backend:3000
+```
+
+Ensure the file is placed in the **root directory of the project**, alongside:
+
+```
+docker-compose.yml
+Makefile
+```
+
+------------------------------------------------------------------------
+
 ### 2. Start Project
 Note: Docker Desktop is mandatory to run this project
 
